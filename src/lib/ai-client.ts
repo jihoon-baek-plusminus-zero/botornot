@@ -207,7 +207,7 @@ export function evaluateAIResponseQuality(
 
   // 페르소나 일관성 계산
   const isCasual = persona.formality_level === 'casual'
-  const hasEmoji = /[😀-🙏🌀-🗿🚀-🛿]/.test(response)
+  const hasEmoji = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}]/u.test(response)
   const hasTypo = /[ㅑㅕㅛㅠ]/.test(response) || /\b(teh|adn|yuo|aer)\b/.test(response.toLowerCase())
   
   let personalityConsistency = 0

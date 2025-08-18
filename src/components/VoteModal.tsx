@@ -13,7 +13,7 @@ interface Player {
 interface VoteModalProps {
   isOpen: boolean
   onClose: () => void
-  onVote: (selectedPlayers: string[]) => Promise<any> | void
+  onVote: (selectedPlayers: string[]) => Promise<{ success: boolean }> | void
   gameType: '1v1' | '1vn'
   players: Player[]
   timeRemaining: number

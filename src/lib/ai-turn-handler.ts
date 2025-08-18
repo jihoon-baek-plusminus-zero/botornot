@@ -571,7 +571,7 @@ function calculateMessageQuality(message: string, context: AITurnContext): numbe
   
   // 페르소나 일관성
   const isCasual = persona.formality_level === 'casual'
-  const hasEmoji = /[😀-🙏🌀-🗿🚀-🛿]/.test(message)
+  const hasEmoji = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}]/u.test(message)
   const hasTypo = /[ㅑㅕㅛㅠ]/.test(message) || /\b(teh|adn|yuo|aer)\b/.test(message.toLowerCase())
   
   if (isCasual && (hasEmoji || hasTypo)) quality += 0.2

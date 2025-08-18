@@ -5,7 +5,7 @@ import { Send, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface MessageInputProps {
-  onSendMessage: (message: string) => Promise<any> | void
+  onSendMessage: (message: string) => Promise<{ success: boolean }> | void
   onVote: () => void
   disabled?: boolean
   placeholder?: string

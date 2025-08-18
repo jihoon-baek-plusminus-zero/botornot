@@ -58,6 +58,34 @@ export interface TopicChangeEvent {
   topic_content: string
 }
 
+// 브로드캐스트 함수들
+export function broadcastMessage(gameId: string, message: RealtimeMessage): void {
+  const channel = supabase.channel(`game:${gameId}`)
+  channel.send({
+    type: 'broadcast',
+    event: 'new_message',
+    payload: message
+  })
+}
+
+export function broadcastVoteSubmitted(gameId: string, voteEvent: VoteEvent): void {
+  const channel = supabase.channel(`game:${gameId}`)
+  channel.send({
+    type: 'broadcast',
+    event: 'vote_submitted',
+    payload: voteEvent
+  })
+}
+
+export function broadcastGameStatusChange(gameId: string, statusEvent: GameStatusEvent): void {
+  const channel = supabase.channel(`game:${gameId}`)
+  channel.send({
+    type: 'broadcast',
+    event: 'game_status_change',
+    payload: statusEvent
+  })
+}
+
 // 실시간 구독 콜백 타입
 export interface RealtimeCallbacks {
   onNewMessage?: (message: RealtimeMessage) => void

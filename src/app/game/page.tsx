@@ -5,10 +5,11 @@ import { Vote } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Header, ChatWindow, MessageInput, VoteModal, ResultsScreen, PlayerList, ToastContainer } from '@/components'
 import { useGame } from '@/contexts/GameContext'
+import { Player, Message } from '@/types/game'
 
 // 빈 배열들 (실제 게임에서는 서버에서 로드됨)
-const samplePlayers: any[] = []
-const sampleMessages: any[] = []
+const samplePlayers: Player[] = []
+const sampleMessages: Message[] = []
 
 export default function GamePage() {
   const { 

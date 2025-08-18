@@ -38,6 +38,8 @@ const activeGames: Map<string, MatchResult> = new Map()
 queues.set('1v1', [])
 queues.set('1vn', [])
 
+
+
 /**
  * 대기열에 플레이어 추가
  */
@@ -232,7 +234,7 @@ async function createGame(
 /**
  * 매칭 알고리즘 실행
  */
-async function attemptMatching(
+export async function attemptMatching(
   queueType: QueueType,
   currentPlayer: QueueEntry
 ): Promise<MatchResult | null> {
