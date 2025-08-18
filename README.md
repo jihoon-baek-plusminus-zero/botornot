@@ -133,3 +133,9 @@ botornot/
 ---
 
 **BotOrNot** - AI vs Human 추리 게임으로 재미있는 대화를 나누어보세요! 🎮✨
+
+## 🔄 최근 업데이트
+
+- **2025-08-18**: 클라우드 Supabase 및 새로운 OpenAI API 키로 업데이트
+- **2025-08-18**: 로컬 Supabase에서 클라우드 Supabase로 전환
+- **2025-08-18**: Vercel 배포 준비 완료
