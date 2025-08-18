@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* 반응형 디자인을 위한 추가 스타일 */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 모바일에서 터치 스크롤 최적화 */
+@media (max-width: 768px) {
+  .overflow-y-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* 작은 화면에서 텍스트 선택 방지 */
+@media (max-width: 640px) {
+  .select-none-mobile {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+}
+
+/* 다크모드 전환 애니메이션 */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* 스크롤바 스타일링 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.8);
+}
+
+/* 다크모드 스크롤바 */
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(75, 85, 99, 0.5);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(75, 85, 99, 0.8);
+}
+
+/* 포커스 링 스타일 */
+.focus-visible:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* 로딩 애니메이션 */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* 터치 디바이스 최적화 */
+@media (hover: none) and (pointer: coarse) {
+  .hover\:bg-gray-100:hover,
+  .hover\:bg-gray-700:hover,
+  .hover\:bg-blue-600:hover,
+  .hover\:bg-purple-600:hover {
+    background-color: inherit;
+  }
+  
+  .hover\:shadow-xl:hover {
+    box-shadow: inherit;
+  }
+}
