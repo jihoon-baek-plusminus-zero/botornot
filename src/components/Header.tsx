@@ -84,7 +84,7 @@ export default function Header({
         <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
           <Users className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-gray-400" />
           <span className="text-xs sm:text-sm lg:text-base text-gray-600 dark:text-gray-300 hidden sm:inline">
-            {voteCount}/{totalPlayers} Selected Vote
+            {voteCount}/{totalPlayers} 투표 준비
           </span>
           <span className="text-xs sm:text-sm lg:text-base text-gray-600 dark:text-gray-300 sm:hidden">
             {voteCount}/{totalPlayers}

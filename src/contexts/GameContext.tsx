@@ -42,6 +42,7 @@ interface GameState {
   totalPlayers: number
   hasVoted: boolean
   myVote: string[]
+  isVotePrepared: boolean
   
   // UI 상태
   isVoteModalOpen: boolean
@@ -86,6 +87,7 @@ type GameAction =
   | { type: 'SET_TOTAL_PLAYERS'; payload: number }
   | { type: 'SET_HAS_VOTED'; payload: boolean }
   | { type: 'SET_MY_VOTE'; payload: string[] }
+  | { type: 'SET_VOTE_PREPARED'; payload: boolean }
   | { type: 'SET_VOTE_MODAL_OPEN'; payload: boolean }
   | { type: 'SET_RESULTS_SCREEN_VISIBLE'; payload: boolean }
   | { type: 'UPDATE_PLAYER_STATUS'; payload: { label: PlayerLabel; updates: Partial<Player> } }
@@ -107,6 +109,7 @@ const initialState: GameState = {
   totalPlayers: 0,
   hasVoted: false,
   myVote: [],
+  isVotePrepared: false,
   isVoteModalOpen: false,
   isResultsScreenVisible: false
 }
@@ -159,6 +162,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SET_MY_VOTE':
       return { ...state, myVote: action.payload }
     
+    case 'SET_VOTE_PREPARED':
+      return { ...state, isVotePrepared: action.payload }
+    
     case 'SET_VOTE_MODAL_OPEN':
       return { ...state, isVoteModalOpen: action.payload }
     
@@ -190,6 +196,7 @@ interface GameContextType {
   // 편의 함수들
   sendMessage: (content: string) => Promise<any>
   submitVote: (selectedPlayers: string[]) => Promise<any>
+  prepareVote: () => void
   openVoteModal: () => Promise<any>
   closeVoteModal: () => void
   showResults: () => void
@@ -398,6 +405,21 @@ export function GameProvider({ children }: GameProviderProps) {
     )
 
     return result
+  }
+
+  // 투표 준비 신호 보내기
+  const prepareVote = () => {
+    if (!state.myPlayerLabel || state.hasVoted) return
+    
+    // 투표 준비 상태로 변경
+    dispatch({ type: 'SET_VOTE_PREPARED', payload: true })
+    dispatch({ type: 'SET_VOTE_COUNT', payload: state.voteCount + 1 })
+    
+    // 모든 플레이어가 투표 준비를 완료했는지 확인
+    if (state.voteCount + 1 >= state.totalPlayers) {
+      // 투표 모달 열기
+      dispatch({ type: 'SET_VOTE_MODAL_OPEN', payload: true })
+    }
   }
 
   const openVoteModal = () => {
@@ -612,6 +634,7 @@ export function GameProvider({ children }: GameProviderProps) {
     dispatch,
     sendMessage,
     submitVote,
+    prepareVote,
     openVoteModal: handleVoteModalOpen,
     closeVoteModal,
     showResults,

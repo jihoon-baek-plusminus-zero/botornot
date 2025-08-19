@@ -17,6 +17,7 @@ export default function GamePage() {
     dispatch, 
     sendMessage, 
     submitVote, 
+    prepareVote,
     openVoteModal, 
     closeVoteModal, 
     showResults, 
@@ -95,8 +96,9 @@ export default function GamePage() {
 
 
   const handleVoteClick = async () => {
-    if (canVote()) {
-      await openVoteModal()
+    if (canVote() && !state.isVotePrepared) {
+      prepareVote()
+      addToast('투표 준비 신호를 보냈습니다!', 'info')
     }
   }
 
@@ -232,13 +234,16 @@ export default function GamePage() {
           {/* Vote 버튼 */}
           <button
             onClick={handleVoteClick}
-            disabled={!canVote()}
+            disabled={!canVote() || state.isVotePrepared}
             className={cn(
-              "px-3 sm:px-4 py-2 sm:py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors flex-shrink-0",
-              !canVote() && "opacity-50 cursor-not-allowed"
+              "px-3 sm:px-4 py-2 sm:py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors flex-shrink-0 flex items-center space-x-2",
+              (!canVote() || state.isVotePrepared) && "opacity-50 cursor-not-allowed"
             )}
           >
             <Vote className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="text-xs sm:text-sm font-medium">
+              {state.isVotePrepared ? '준비완료' : '투표준비'}
+            </span>
           </button>
         </div>
       </div>
