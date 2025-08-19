@@ -449,9 +449,14 @@ function generateVoteDecisionPrompt(context: AITurnContext): string {
     .map(msg => {
       // msg가 객체인지 확인하고 안전하게 처리
       if (typeof msg === 'object' && msg !== null) {
-        const playerLabel = 'playerLabel' in msg ? msg.playerLabel : 'Unknown'
-        const content = 'content' in msg ? msg.content : ''
-        return `${playerLabel}: ${content}`
+        const playerLabel = 'playerLabel' in msg ? String(msg.playerLabel || 'Unknown') : 'Unknown'
+        const content = 'content' in msg ? String(msg.content || '') : ''
+        
+        // 안전한 문자열로 변환
+        const safePlayerLabel = playerLabel.replace(/[^\w\s가-힣]/g, '')
+        const safeContent = content.replace(/[^\w\s가-힣.,!?;:'"()-]/g, '')
+        
+        return `${safePlayerLabel}: ${safeContent}`
       }
       return 'Unknown: Invalid message format'
     })
@@ -489,9 +494,14 @@ function generateMessagePrompt(context: AITurnContext, voteDecision: AIVoteDecis
     .map(msg => {
       // msg가 객체인지 확인하고 안전하게 처리
       if (typeof msg === 'object' && msg !== null) {
-        const playerLabel = 'playerLabel' in msg ? msg.playerLabel : 'Unknown'
-        const content = 'content' in msg ? msg.content : ''
-        return `${playerLabel}: ${content}`
+        const playerLabel = 'playerLabel' in msg ? String(msg.playerLabel || 'Unknown') : 'Unknown'
+        const content = 'content' in msg ? String(msg.content || '') : ''
+        
+        // 안전한 문자열로 변환
+        const safePlayerLabel = playerLabel.replace(/[^\w\s가-힣]/g, '')
+        const safeContent = content.replace(/[^\w\s가-힣.,!?;:'"()-]/g, '')
+        
+        return `${safePlayerLabel}: ${safeContent}`
       }
       return 'Unknown: Invalid message format'
     })

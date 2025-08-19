@@ -152,6 +152,8 @@ export async function generateAIResponse(
 
     // 프롬프트 생성
     const prompt = generatePrompt(request, persona)
+    console.log('Generated prompt length:', prompt.length)
+    console.log('Prompt preview:', prompt.substring(0, 200) + '...')
     
     // OpenAI API 호출
     const openaiResponse = await callOpenAI(prompt, request.temperature || DEFAULT_MODEL_CONFIG.temperature)
@@ -277,9 +279,14 @@ function generatePrompt(request: GenerateAIResponseRequest, persona: AIPersona):
     .map(msg => {
       // msg가 객체인지 확인하고 안전하게 처리
       if (typeof msg === 'object' && msg !== null) {
-        const playerLabel = 'playerLabel' in msg ? msg.playerLabel : 'Unknown'
-        const content = 'content' in msg ? msg.content : ''
-        return `${playerLabel}: ${content}`
+        const playerLabel = 'playerLabel' in msg ? String(msg.playerLabel || 'Unknown') : 'Unknown'
+        const content = 'content' in msg ? String(msg.content || '') : ''
+        
+        // 안전한 문자열로 변환
+        const safePlayerLabel = playerLabel.replace(/[^\w\s가-힣]/g, '')
+        const safeContent = content.replace(/[^\w\s가-힣.,!?;:'"()-]/g, '')
+        
+        return `${safePlayerLabel}: ${safeContent}`
       }
       return 'Unknown: Invalid message format'
     })
@@ -290,15 +297,18 @@ function generatePrompt(request: GenerateAIResponseRequest, persona: AIPersona):
 
   // 사용자 프롬프트
   const userPrompt = promptSettings.userPromptTemplate
-    .replace('{topic}', request.currentTopic)
-    .replace('{gameType}', request.gameType)
+    .replace('{topic}', String(request.currentTopic || ''))
+    .replace('{gameType}', String(request.gameType || ''))
     .replace('{history}', historyText)
 
-  return `${systemPrompt}
+  const finalPrompt = `${systemPrompt}
 
 ${userPrompt}
 
 응답은 자연스럽고 ${persona.speaking_style}한 톤으로 해주세요. ${request.maxLength || 100}자 이내로 답변해주세요.`
+
+  // 최종 프롬프트에서 안전하지 않은 문자 제거
+  return finalPrompt.replace(/[^\x20-\x7E\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F\uA960-\uA97F\uAC00-\uD7A3\uFF00-\uFFEF]/g, '')
 }
 
 /**
