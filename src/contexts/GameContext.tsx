@@ -407,18 +407,24 @@ export function GameProvider({ children }: GameProviderProps) {
     return result
   }
 
-  // 투표 준비 신호 보내기
+  // 투표 준비 신호 보내기/취소하기
   const prepareVote = () => {
-    if (!state.myPlayerLabel || state.hasVoted) return
+    if (!state.myPlayerLabel || state.hasVoted || state.isVoteModalOpen) return
     
-    // 투표 준비 상태로 변경
-    dispatch({ type: 'SET_VOTE_PREPARED', payload: true })
-    dispatch({ type: 'SET_VOTE_COUNT', payload: state.voteCount + 1 })
-    
-    // 모든 플레이어가 투표 준비를 완료했는지 확인
-    if (state.voteCount + 1 >= state.totalPlayers) {
-      // 투표 모달 열기
-      dispatch({ type: 'SET_VOTE_MODAL_OPEN', payload: true })
+    if (state.isVotePrepared) {
+      // 투표 준비 취소
+      dispatch({ type: 'SET_VOTE_PREPARED', payload: false })
+      dispatch({ type: 'SET_VOTE_COUNT', payload: Math.max(0, state.voteCount - 1) })
+    } else {
+      // 투표 준비 상태로 변경
+      dispatch({ type: 'SET_VOTE_PREPARED', payload: true })
+      dispatch({ type: 'SET_VOTE_COUNT', payload: state.voteCount + 1 })
+      
+      // 모든 플레이어가 투표 준비를 완료했는지 확인
+      if (state.voteCount + 1 >= state.totalPlayers) {
+        // 투표 모달 열기
+        dispatch({ type: 'SET_VOTE_MODAL_OPEN', payload: true })
+      }
     }
   }
 
