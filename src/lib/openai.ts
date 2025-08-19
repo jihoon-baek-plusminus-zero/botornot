@@ -16,6 +16,12 @@ import {
 import { PlayerLabel } from '@/types/game'
 import { createServerClient } from './supabase'
 
+// OpenAI API 키 확인
+if (!process.env.OPENAI_API_KEY) {
+  console.error('OPENAI_API_KEY가 설정되지 않았습니다.')
+  throw new Error('OPENAI_API_KEY 환경 변수가 필요합니다.')
+}
+
 // OpenAI 클라이언트 초기화
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -255,8 +261,15 @@ function generatePrompt(request: GenerateAIResponseRequest, persona: AIPersona):
   
   // 대화 히스토리 포맷팅
   const historyText = request.conversationHistory
-    .filter(msg => !msg.isSystemMessage)
-    .map(msg => `${msg.playerLabel}: ${msg.content}`)
+    .map(msg => {
+      // msg가 객체인지 확인하고 안전하게 처리
+      if (typeof msg === 'object' && msg !== null) {
+        const playerLabel = 'playerLabel' in msg ? msg.playerLabel : 'Unknown'
+        const content = 'content' in msg ? msg.content : ''
+        return `${playerLabel}: ${content}`
+      }
+      return 'Unknown: Invalid message format'
+    })
     .join('\n')
 
   // 시스템 프롬프트
@@ -279,24 +292,40 @@ ${userPrompt}
  * OpenAI API 호출
  */
 async function callOpenAI(prompt: string, temperature: number): Promise<OpenAIResponse> {
-  const response = await openai.chat.completions.create({
-    model: DEFAULT_MODEL_CONFIG.model,
-    messages: [
-      {
-        role: 'system',
-        content: '당신은 AI vs Human 게임에서 AI 플레이어 역할을 합니다. 자연스럽고 인간다운 응답을 생성해주세요.'
-      },
-      {
-        role: 'user',
-        content: prompt
-      }
-    ],
-    temperature: temperature,
-    max_tokens: DEFAULT_MODEL_CONFIG.max_tokens,
-    top_p: DEFAULT_MODEL_CONFIG.top_p,
-    frequency_penalty: DEFAULT_MODEL_CONFIG.frequency_penalty,
-    presence_penalty: DEFAULT_MODEL_CONFIG.presence_penalty
-  })
+  try {
+    console.log('Calling OpenAI API with prompt length:', prompt.length)
+    
+    const response = await openai.chat.completions.create({
+      model: DEFAULT_MODEL_CONFIG.model,
+      messages: [
+        {
+          role: 'system',
+          content: '당신은 AI vs Human 게임에서 AI 플레이어 역할을 합니다. 자연스럽고 인간다운 응답을 생성해주세요.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      temperature: temperature,
+      max_tokens: DEFAULT_MODEL_CONFIG.max_tokens,
+      top_p: DEFAULT_MODEL_CONFIG.top_p,
+      frequency_penalty: DEFAULT_MODEL_CONFIG.frequency_penalty,
+      presence_penalty: DEFAULT_MODEL_CONFIG.presence_penalty
+    })
+
+    console.log('OpenAI API response received:', {
+      model: response.model,
+      usage: response.usage,
+      choicesCount: response.choices?.length
+    })
+
+    return response
+  } catch (error) {
+    console.error('OpenAI API call failed:', error)
+    throw error
+  }
+}
 
   return {
     id: response.id,
