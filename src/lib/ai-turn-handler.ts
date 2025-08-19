@@ -68,7 +68,7 @@ export async function handleAITurn(request: AITurnRequest): Promise<AITurnRespon
     aiTurnStats.totalTurns++
     aiTurnStats.personaUsage[request.personaId] = (aiTurnStats.personaUsage[request.personaId] || 0) + 1
 
-    // AI 페르소나 조회
+    // AI 페르소나 조회 (기본 페르소나 제공)
     const persona = await getAIPersona(request.personaId)
     if (!persona) {
       throw new Error(`AI 페르소나를 찾을 수 없습니다: ${request.personaId}`)
@@ -166,7 +166,7 @@ export async function handleAITurn(request: AITurnRequest): Promise<AITurnRespon
     } else if (messageGeneration?.message) {
       actions.push({
         type: 'message' as const,
-        data: { message: messageGeneration.message },
+        content: messageGeneration.message, // 메시지 내용을 content로 변경
         timestamp: new Date().toISOString()
       })
     } else if (messageGeneration?.shouldSkip) {
@@ -280,7 +280,7 @@ async function decideVote(context: AITurnContext): Promise<AIVoteDecisionRespons
       }
     }
 
-    // AI를 사용한 투표 결정
+    // OpenAI API를 사용한 투표 결정
     const votePrompt = generateVoteDecisionPrompt(context)
     
     const aiResponse = await generateAIResponse({
@@ -351,9 +351,7 @@ async function generateMessage(
       }
     }
 
-    // AI를 사용한 메시지 생성
-    const messagePrompt = generateMessagePrompt(context, voteDecision)
-    
+    // OpenAI API를 사용한 메시지 생성
     const aiResponse = await generateAIResponse({
       gameId: context.gameId,
       playerLabel: context.playerLabel,
@@ -415,7 +413,6 @@ function generateVoteDecisionPrompt(context: AITurnContext): string {
   const { persona, gameType, conversationHistory, currentTopic, timeRemaining, voteCount, totalPlayers } = context
   
   const historyText = conversationHistory
-    .filter(msg => !msg.isSystemMessage)
     .map(msg => `${msg.playerLabel}: ${msg.content}`)
     .join('\n')
 
@@ -448,22 +445,26 @@ function generateMessagePrompt(context: AITurnContext, voteDecision: AIVoteDecis
   const { persona, gameType, conversationHistory, currentTopic, turnTimeRemaining } = context
   
   const historyText = conversationHistory
-    .filter(msg => !msg.isSystemMessage)
     .map(msg => `${msg.playerLabel}: ${msg.content}`)
     .join('\n')
 
-  return `당신은 AI vs Human 게임에서 ${persona.name} 역할을 하고 있습니다.
+  return `당신은 AI vs Human 게임에 참여하고 있는 ${persona.name}입니다. 상대방이 AI인지 사람인지 구별하기 어렵게 자연스럽게 대화하세요.
 
 게임 정보:
 - 게임 타입: ${gameType}
 - 현재 주제: ${currentTopic}
 - 턴 남은 시간: ${turnTimeRemaining}초
-- 투표 결정: ${voteDecision.shouldVote ? '투표 예정' : '계속 대화'}
 
 대화 히스토리:
 ${historyText}
 
-자연스럽고 ${persona.name}다운 응답을 생성해주세요. ${persona.avg_response_length}자 이내로 답변해주세요.`
+위의 대화 내용을 바탕으로 자연스럽게 이어서 대화하세요. 
+- 사람처럼 자연스럽게 대화하되, 너무 완벽하지 않게 하세요
+- 이전 메시지에 대한 반응이나 질문을 포함하세요
+- ${persona.avg_response_length}자 이내로 간결하게 답변하세요
+- 한국어로 답변하세요
+
+응답:`
 }
 
 /**
@@ -598,7 +599,22 @@ async function getAIPersona(personaId: number): Promise<AIPersona | null> {
       .single()
 
     if (error || !data) {
-      return null
+      // 기본 페르소나 반환
+      return {
+        id: personaId,
+        name: 'AI 플레이어',
+        description: '친근하고 자연스러운 대화를 하는 AI입니다.',
+        personality: '친근하고 자연스러운 대화를 하는 AI입니다.',
+        speaking_style: 'casual',
+        interests: ['일반적인 관심사'],
+        background: '친근하고 자연스러운 대화를 하는 AI입니다.',
+        typo_chance: 0.1,
+        meme_chance: 0.2,
+        avg_response_time_ms: 3000,
+        avg_response_length: 50,
+        emoji_usage: 0.2,
+        formality_level: 'casual'
+      }
     }
 
     return {
@@ -618,7 +634,22 @@ async function getAIPersona(personaId: number): Promise<AIPersona | null> {
     }
   } catch (error) {
     console.error('AI 페르소나 조회 오류:', error)
-    return null
+    // 기본 페르소나 반환
+    return {
+      id: personaId,
+      name: 'AI 플레이어',
+      description: '친근하고 자연스러운 대화를 하는 AI입니다.',
+      personality: '친근하고 자연스러운 대화를 하는 AI입니다.',
+      speaking_style: 'casual',
+      interests: ['일반적인 관심사'],
+      background: '친근하고 자연스러운 대화를 하는 AI입니다.',
+      typo_chance: 0.1,
+      meme_chance: 0.2,
+      avg_response_time_ms: 3000,
+      avg_response_length: 50,
+      emoji_usage: 0.2,
+      formality_level: 'casual'
+    }
   }
 }
 

@@ -57,6 +57,7 @@ interface Player {
   isAI: boolean
   isActive: boolean
   hasVoted: boolean
+  personaId?: number // AI 플레이어의 경우 페르소나 ID
 }
 
 // 메시지 타입
@@ -258,128 +259,111 @@ export function GameProvider({ children }: GameProviderProps) {
     return { success: true }
   }
 
-  const simulateAITurn = (aiPlayerLabel: PlayerLabel) => {
-    console.log('Simulating AI turn for:', aiPlayerLabel)
+  const simulateAITurn = async (aiPlayerLabel: PlayerLabel) => {
+    console.log('Generating AI turn with OpenAI API for:', aiPlayerLabel)
     
-    // 이전 메시지들 확인 (중복 방지)
-    const recentMessages = state.messages.slice(-5).map(msg => msg.content)
-    
-    // AI 메시지 생성 (더 다양한 응답)
-    const aiMessages = [
-      // 인사 및 일반적인 대화
-      '안녕하세요! 오늘 날씨가 정말 좋네요. 뭐 하고 계세요?',
-      '저는 집에서 영화를 보고 있어요. 어떤 영화를 좋아하시나요?',
-      '저는 액션 영화를 좋아해요! 특히 마블 영화들이요.',
-      '최근에 본 영화 중에 인상 깊었던 게 있나요?',
-      '저는 어제 새로운 드라마를 봤는데 정말 재미있었어요!',
-      '음악도 좋아하시나요? 어떤 장르를 선호하세요?',
-      '여행 다니는 것도 좋아하시나요?',
-      '요리나 베이킹에 관심이 있으시나요?',
-      '운동이나 스포츠는 어떠세요?',
-      '책 읽는 것도 좋아하시나요?',
+    try {
+      // AI 플레이어 정보 찾기
+      const aiPlayer = state.players.find(p => p.label === aiPlayerLabel)
+      if (!aiPlayer) {
+        console.error('AI player not found:', aiPlayerLabel)
+        return
+      }
+
+      // 대화 히스토리 준비 (최근 10개 메시지)
+      const conversationHistory = state.messages
+        .slice(-10)
+        .map(msg => ({
+          playerLabel: msg.playerLabel,
+          content: msg.content,
+          timestamp: msg.timestamp
+        }))
+
+      // AI 턴 API 호출
+      const response = await fetch('/api/ai/turn', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: state.gameId,
+          playerLabel: aiPlayerLabel,
+          personaId: aiPlayer.personaId || 1, // 기본 페르소나 ID
+          gameType: state.gameType,
+          currentTopic: state.currentTopic,
+          conversationHistory,
+          turnTimeRemaining: state.turnTimeRemaining,
+          gameStatus: state.gameStatus,
+          voteCount: state.voteCount,
+          totalPlayers: state.totalPlayers,
+          timeRemaining: state.timeRemaining,
+          currentTurn: state.currentTurn,
+          players: state.players
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`AI turn API error: ${response.status}`)
+      }
+
+      const result = await response.json()
       
-      // 더 다양한 응답들
-      '그렇군요! 저도 비슷한 취미가 있어요.',
-      '정말 흥미롭네요. 더 자세히 들려주세요!',
-      '와, 멋진 취미네요! 언제부터 시작하셨나요?',
-      '저도 그런 것에 관심이 많아요.',
-      '좋은 선택이네요! 저도 추천하고 싶은 게 있어요.',
-      '그런 이야기 들으니까 저도 해보고 싶어지네요.',
-      '정말 대단하시네요! 어떤 점이 가장 재미있으세요?',
-      '저도 비슷한 경험이 있어요.',
-      '그런 취미가 있다니 부럽네요!',
-      '정말 멋진 관심사네요. 더 알려주세요!',
+      if (result.success && result.actions && result.actions.length > 0) {
+        // AI 응답 메시지 추가
+        const aiMessage: Message = {
+          id: Date.now().toString(),
+          playerLabel: aiPlayerLabel,
+          playerColor: aiPlayer.color,
+          content: result.actions[0].content || '안녕하세요!',
+          isMyMessage: false,
+          timestamp: '방금 전'
+        }
+        
+        dispatch({ type: 'ADD_MESSAGE', payload: aiMessage })
+        
+        console.log('AI response generated successfully:', result.actions[0].content)
+      } else {
+        console.error('AI turn failed:', result.error)
+        // 실패 시 기본 메시지
+        const fallbackMessage: Message = {
+          id: Date.now().toString(),
+          playerLabel: aiPlayerLabel,
+          playerColor: aiPlayer.color,
+          content: '안녕하세요! 오늘 날씨가 정말 좋네요. 뭐 하고 계세요?',
+          isMyMessage: false,
+          timestamp: '방금 전'
+        }
+        dispatch({ type: 'ADD_MESSAGE', payload: fallbackMessage })
+      }
       
-      // 질문형 응답들
-      '그럼 평소에는 주로 뭐 하시나요?',
-      '혹시 다른 취미도 있으시나요?',
-      '언제부터 그런 관심을 가지게 되셨나요?',
-      '가장 좋아하는 부분은 뭐인가요?',
-      '그런 활동을 하면서 어떤 느낌을 받으시나요?',
-      '혹시 추천하고 싶은 게 있으시나요?',
-      '그런 것에 대해 더 알고 싶어요!',
-      '어떤 점이 가장 재미있으신가요?',
-      '그런 경험을 하면서 배운 게 있나요?',
-      '앞으로는 어떤 계획이 있으시나요?',
+      // 턴을 다시 사람 플레이어로 변경
+      setTimeout(() => {
+        dispatch({ type: 'SET_CURRENT_TURN', payload: state.myPlayerLabel! })
+        // 사람 턴으로 돌아올 때 타이머 리셋
+        dispatch({ type: 'SET_TURN_TIME_REMAINING', payload: 20 })
+      }, 1000)
       
-      // 공감 및 반응
-      '정말 공감이 가네요!',
-      '저도 그런 생각을 해봤어요.',
-      '정말 멋진 생각이에요!',
-      '그런 관점이 흥미롭네요.',
-      '저도 비슷한 경험을 했어요.',
-      '정말 좋은 의견이네요!',
-      '그런 생각을 하시다니 대단해요.',
-      '저도 그런 느낌을 받은 적이 있어요.',
-      '정말 흥미로운 이야기네요!',
-      '그런 관점이 새롭네요.'
-    ]
-    
-    // 대화 맥락 분석
-    const lastHumanMessage = state.messages
-      .filter(msg => msg.playerLabel !== aiPlayerLabel)
-      .pop()?.content || ''
-    
-    // 맥락에 따른 응답 선택
-    let selectedMessage = ''
-    let attempts = 0
-    const maxAttempts = 10
-    
-    // 마지막 사람 메시지에 따른 맥락적 응답
-    if (lastHumanMessage.includes('책') || lastHumanMessage.includes('읽')) {
-      const bookResponses = [
-        '저도 책 읽는 걸 좋아해요! 어떤 장르를 선호하시나요?',
-        '책 읽는 건 정말 좋은 취미네요. 최근에 읽은 책 중에 인상 깊었던 게 있나요?',
-        '저도 독서를 즐겨요. 어떤 책을 추천하고 싶으시나요?'
-      ]
-      selectedMessage = bookResponses[Math.floor(Math.random() * bookResponses.length)]
-    } else if (lastHumanMessage.includes('영화') || lastHumanMessage.includes('드라마')) {
-      const movieResponses = [
-        '영화 보는 걸 좋아하시는군요! 어떤 장르를 선호하시나요?',
-        '저도 영화를 자주 봐요. 최근에 본 영화 중에 추천하고 싶은 게 있나요?',
-        '영화는 정말 좋은 여가 활동이에요. 어떤 영화가 가장 인상 깊었나요?'
-      ]
-      selectedMessage = movieResponses[Math.floor(Math.random() * movieResponses.length)]
-    } else if (lastHumanMessage.includes('음악')) {
-      const musicResponses = [
-        '음악도 좋아하시는군요! 어떤 장르를 선호하시나요?',
-        '저도 음악 듣는 걸 좋아해요. 최근에 듣고 있는 곡이 있나요?',
-        '음악은 기분을 바꿔주는 좋은 방법이에요. 어떤 음악을 추천하고 싶으시나요?'
-      ]
-      selectedMessage = musicResponses[Math.floor(Math.random() * musicResponses.length)]
-    } else if (lastHumanMessage.includes('여행')) {
-      const travelResponses = [
-        '여행 다니는 걸 좋아하시는군요! 어디로 여행 가보고 싶으신가요?',
-        '저도 여행을 좋아해요. 가장 인상 깊었던 여행지는 어디인가요?',
-        '여행은 정말 좋은 경험이에요. 어떤 곳을 추천하고 싶으시나요?'
-      ]
-      selectedMessage = travelResponses[Math.floor(Math.random() * travelResponses.length)]
-    } else {
-      // 일반적인 응답 (중복 방지)
-      do {
-        selectedMessage = aiMessages[Math.floor(Math.random() * aiMessages.length)]
-        attempts++
-      } while (recentMessages.includes(selectedMessage) && attempts < maxAttempts)
+    } catch (error) {
+      console.error('Error generating AI turn:', error)
+      
+      // 에러 시 기본 메시지
+      const aiPlayer = state.players.find(p => p.label === aiPlayerLabel)
+      const fallbackMessage: Message = {
+        id: Date.now().toString(),
+        playerLabel: aiPlayerLabel,
+        playerColor: aiPlayer?.color || 'bg-red-500',
+        content: '안녕하세요! 오늘 날씨가 정말 좋네요. 뭐 하고 계세요?',
+        isMyMessage: false,
+        timestamp: '방금 전'
+      }
+      dispatch({ type: 'ADD_MESSAGE', payload: fallbackMessage })
+      
+      // 턴을 다시 사람 플레이어로 변경
+      setTimeout(() => {
+        dispatch({ type: 'SET_CURRENT_TURN', payload: state.myPlayerLabel! })
+        dispatch({ type: 'SET_TURN_TIME_REMAINING', payload: 20 })
+      }, 1000)
     }
-    
-    // AI 메시지 추가
-    const aiMessage: Message = {
-      id: Date.now().toString(),
-      playerLabel: aiPlayerLabel,
-      playerColor: state.players.find(p => p.label === aiPlayerLabel)?.color || 'bg-red-500',
-      content: selectedMessage,
-      isMyMessage: false,
-      timestamp: '방금 전'
-    }
-    
-    dispatch({ type: 'ADD_MESSAGE', payload: aiMessage })
-    
-    // 턴을 다시 사람 플레이어로 변경
-    setTimeout(() => {
-      dispatch({ type: 'SET_CURRENT_TURN', payload: state.myPlayerLabel! })
-      // 사람 턴으로 돌아올 때 타이머 리셋
-      dispatch({ type: 'SET_TURN_TIME_REMAINING', payload: 20 })
-    }, 1000)
   }
 
   const submitVote = async (voteData: string[] | { playerLabel: string; voteType: 'ai' | 'human' }) => {

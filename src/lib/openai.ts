@@ -23,7 +23,7 @@ const openai = new OpenAI({
 
 // AI 모델 설정
 const DEFAULT_MODEL_CONFIG: AIModelConfig = {
-  model: 'gpt-4',
+  model: 'gpt-3.5-turbo',
   temperature: 0.7,
   max_tokens: 150,
   top_p: 0.9,

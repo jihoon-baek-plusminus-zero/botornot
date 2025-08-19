@@ -53,7 +53,7 @@ export default function GamePage() {
     try {
       // 테스트용 게임 데이터 설정
       const testPlayers = [
-        { label: 'A' as const, color: 'bg-red-500', name: 'AI Player', isAI: true, isActive: true, hasVoted: false },
+        { label: 'A' as const, color: 'bg-red-500', name: 'AI Player', isAI: true, isActive: true, hasVoted: false, personaId: 1 },
         { label: 'B' as const, color: 'bg-blue-500', name: 'Human Player', isAI: false, isActive: true, hasVoted: false }
       ]
       

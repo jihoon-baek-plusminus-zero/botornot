@@ -146,7 +146,21 @@ export async function POST(request: NextRequest) {
     })
 
     if (result.success) {
-      return NextResponse.json(result)
+      // 메시지 액션이 있는 경우 content 필드 확인
+      const actions = result.actions.map(action => {
+        if (action.type === 'message' && 'content' in action) {
+          return {
+            ...action,
+            content: action.content
+          }
+        }
+        return action
+      })
+      
+      return NextResponse.json({
+        ...result,
+        actions
+      })
     } else {
       return NextResponse.json(result, { status: 500 })
     }
