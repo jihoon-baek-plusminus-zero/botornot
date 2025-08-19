@@ -102,8 +102,8 @@ export default function GamePage() {
     }
   }
 
-  const handleVoteSubmit = (selectedPlayers: string[]) => {
-    submitVote(selectedPlayers)
+  const handleVoteSubmit = (voteData: string[] | { playerLabel: string; voteType: 'ai' | 'human' }) => {
+    submitVote(voteData)
   }
 
   const handleBackToLobbyFromResults = () => {

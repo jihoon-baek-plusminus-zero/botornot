@@ -8,7 +8,7 @@ import { broadcastVoteSubmitted } from '@/lib/realtime'
 export async function POST(request: NextRequest) {
   try {
     const body: SubmitVoteRequest = await request.json()
-    const { gameId, playerLabel, votedForPlayer } = body
+    const { gameId, playerLabel, votedForPlayer, voteType } = body
 
     // 입력 검증
     if (!gameId || !playerLabel || !votedForPlayer) {
@@ -127,16 +127,26 @@ export async function POST(request: NextRequest) {
     // 투표 ID 생성
     const voteId = generateId()
 
+    // 투표 데이터 준비
+    const voteData: any = {
+      id: voteId,
+      game_id: gameId,
+      voter_player_label: playerLabel,
+      voted_for_players: [votedForPlayer],
+      timestamp: new Date().toISOString()
+    }
+
+    // 1:1 게임에서 AI/Human 선택이 있는 경우 추가 정보 저장
+    if (voteType) {
+      voteData.vote_type = voteType
+      voteData.confidence = voteType === 'ai' ? 0.8 : 0.2 // AI 선택 시 높은 신뢰도, Human 선택 시 낮은 신뢰도
+      voteData.reasoning = voteType === 'ai' ? 'AI로 판단됨' : 'Human으로 판단됨'
+    }
+
     // 투표 저장
     const { error: insertError } = await supabase
       .from('votes')
-      .insert({
-        id: voteId,
-        game_id: gameId,
-        player_label: playerLabel,
-        voted_for_player: votedForPlayer,
-        timestamp: new Date().toISOString()
-      })
+      .insert(voteData)
 
     if (insertError) {
       console.error('Failed to insert vote:', insertError)

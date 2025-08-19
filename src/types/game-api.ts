@@ -19,6 +19,7 @@ export interface SubmitVoteRequest {
   gameId: string
   playerLabel: PlayerLabel
   votedForPlayer: PlayerLabel
+  voteType?: 'ai' | 'human' // 1:1 게임에서 AI/Human 선택
 }
 
 // 투표 제출 응답

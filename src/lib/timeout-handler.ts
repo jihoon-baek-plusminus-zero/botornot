@@ -32,7 +32,7 @@ const timeoutStats: TimeoutStats = {
   turnTimeouts: 0,
   voteTimeouts: 0,
   aiAutoActions: 0,
-  lastTimeout: new Date().toISOString()
+  lastTimeout?: new Date().toISOString()
 }
 
 // 게임 타임아웃 시작

@@ -28,15 +28,25 @@ export async function sendMessageToGame(
 export async function submitVoteToGame(
   gameId: string,
   voterPlayerId: string,
-  votedForPlayerId: string
+  votedForPlayerId: string,
+  voteType?: 'ai' | 'human'
 ) {
+  const voteData: any = {
+    game_id: gameId,
+    voter_player_label: voterPlayerId,
+    voted_for_players: [votedForPlayerId]
+  }
+
+  // 1:1 게임에서 AI/Human 선택이 있는 경우 추가 정보 저장
+  if (voteType) {
+    voteData.vote_type = voteType
+    voteData.confidence = voteType === 'ai' ? 0.8 : 0.2 // AI 선택 시 높은 신뢰도, Human 선택 시 낮은 신뢰도
+    voteData.reasoning = voteType === 'ai' ? 'AI로 판단됨' : 'Human으로 판단됨'
+  }
+
   const { data, error } = await supabase
     .from('votes')
-    .insert({
-      game_id: gameId,
-      voter_player_id: voterPlayerId,
-      voted_for_player_id: votedForPlayerId
-    })
+    .insert(voteData)
     .select()
 
   if (error) {

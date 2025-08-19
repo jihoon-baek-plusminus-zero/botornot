@@ -195,7 +195,7 @@ interface GameContextType {
   dispatch: React.Dispatch<GameAction>
   // 편의 함수들
   sendMessage: (content: string) => Promise<any>
-  submitVote: (selectedPlayers: string[]) => Promise<any>
+  submitVote: (voteData: string[] | { playerLabel: string; voteType: 'ai' | 'human' }) => Promise<any>
   prepareVote: () => void
   openVoteModal: () => Promise<any>
   closeVoteModal: () => void
@@ -382,14 +382,29 @@ export function GameProvider({ children }: GameProviderProps) {
     }, 1000)
   }
 
-  const submitVote = async (selectedPlayers: string[]) => {
+  const submitVote = async (voteData: string[] | { playerLabel: string; voteType: 'ai' | 'human' }) => {
     if (!state.myPlayerLabel || !state.gameId) return
+
+    // 1:1 게임에서는 AI/Human 선택, 1:N 게임에서는 플레이어 선택
+    let selectedPlayers: string[]
+    let voteType: 'ai' | 'human' | undefined
+
+    if (state.gameType === '1v1' && typeof voteData === 'object' && 'voteType' in voteData) {
+      selectedPlayers = [voteData.playerLabel]
+      voteType = voteData.voteType
+    } else if (Array.isArray(voteData)) {
+      selectedPlayers = voteData
+    } else {
+      console.error('Invalid vote data format')
+      return
+    }
 
     const result = await handleVoteSubmit(
       selectedPlayers,
       state.gameId,
       state.myPlayerLabel,
       state.gameType,
+      voteType,
       // 성공 콜백
       () => {
         console.log('Vote submitted successfully')

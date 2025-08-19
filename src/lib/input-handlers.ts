@@ -89,6 +89,7 @@ export async function handleVoteSubmit(
   gameId: string,
   playerLabel: PlayerLabel,
   gameType: '1v1' | '1vn',
+  voteType?: 'ai' | 'human',
   onSuccess?: () => void,
   onError?: (error: string) => void
 ) {
@@ -100,10 +101,16 @@ export async function handleVoteSubmit(
       return { success: false, error: validation.error }
     }
 
+    // 1:1 게임에서 AI/Human 선택 검증
+    if (gameType === '1v1' && !voteType) {
+      onError?.('AI 또는 Human을 선택해주세요.')
+      return { success: false, error: 'AI 또는 Human을 선택해주세요.' }
+    }
+
     // Supabase에 투표 전송
     if (gameType === '1v1') {
-      // 1:1 게임: 첫 번째 선택된 플레이어에게 투표
-      await submitVoteToGame(gameId, playerLabel, selectedPlayers[0])
+      // 1:1 게임: AI/Human 선택과 함께 투표
+      await submitVoteToGame(gameId, playerLabel, selectedPlayers[0], voteType)
     } else {
       // 1:N 게임: 두 명에게 각각 투표
       for (const votedPlayer of selectedPlayers) {

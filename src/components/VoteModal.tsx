@@ -13,7 +13,7 @@ interface Player {
 interface VoteModalProps {
   isOpen: boolean
   onClose: () => void
-  onVote: (selectedPlayers: string[]) => Promise<{ success: boolean }> | void
+  onVote: (selectedPlayers: string[] | { playerLabel: string; voteType: 'ai' | 'human' }) => Promise<{ success: boolean }> | void
   gameType: '1v1' | '1vn'
   players: Player[]
   timeRemaining: number
@@ -30,6 +30,7 @@ export default function VoteModal({
   myPlayerLabel
 }: VoteModalProps) {
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([])
+  const [selectedVoteType, setSelectedVoteType] = useState<'ai' | 'human' | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -50,15 +51,35 @@ export default function VoteModal({
     }
   }
 
+  const handleVoteTypeSelect = (voteType: 'ai' | 'human') => {
+    setSelectedVoteType(voteType)
+  }
+
   const handleVote = async () => {
     if (selectedPlayers.length > 0 && !isLoading) {
       setIsLoading(true)
       setError(null)
       
       try {
-        const result = await Promise.resolve(onVote(selectedPlayers))
+        let voteData
+        if (gameType === '1v1') {
+          if (!selectedVoteType) {
+            setError('AI 또는 Human을 선택해주세요.')
+            setIsLoading(false)
+            return
+          }
+          voteData = {
+            playerLabel: selectedPlayers[0],
+            voteType: selectedVoteType
+          }
+        } else {
+          voteData = selectedPlayers
+        }
+        
+        const result = await Promise.resolve(onVote(voteData))
         if (result?.success) {
           setSelectedPlayers([])
+          setSelectedVoteType(null)
         } else if (result?.error) {
           setError(result.error)
         }
@@ -107,7 +128,7 @@ export default function VoteModal({
           </div>
           <p className="text-center text-xs sm:text-sm lg:text-base text-gray-600 dark:text-gray-300 mt-2">
             {gameType === '1v1' 
-              ? '상대방이 AI인지 사람인지 선택하세요'
+              ? '상대방이 AI인지 사람인지 투표해주세요.'
               : 'AI로 의심되는 플레이어 2명을 선택하세요'
             }
           </p>
@@ -119,38 +140,66 @@ export default function VoteModal({
             {players
               .filter(player => player.label !== myPlayerLabel) // 자신은 제외
               .map((player) => (
-                <button
-                  key={player.label}
-                  onClick={() => handlePlayerSelect(player.label)}
-                  className={cn(
-                    "w-full p-3 sm:p-4 rounded-lg border-2 transition-all duration-200 flex items-center space-x-2 sm:space-x-3",
-                    selectedPlayers.includes(player.label)
-                      ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20"
-                      : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
-                  )}
-                >
-                  <div 
+                <div key={player.label}>
+                  <button
+                    onClick={() => handlePlayerSelect(player.label)}
                     className={cn(
-                      "w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm sm:text-base flex-shrink-0",
-                      player.color
+                      "w-full p-3 sm:p-4 rounded-lg border-2 transition-all duration-200 flex items-center space-x-2 sm:space-x-3",
+                      selectedPlayers.includes(player.label)
+                        ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20"
+                        : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
                     )}
                   >
-                    {player.label}
-                  </div>
-                  <div className="flex-1 text-left min-w-0">
+                    <div 
+                      className={cn(
+                        "w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm sm:text-base flex-shrink-0",
+                        player.color
+                      )}
+                    >
+                      {player.label}
+                    </div>
+                                      <div className="flex-1 text-left min-w-0">
                     <p className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">
                       Player {player.label}
                     </p>
-                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">
-                      {player.name}
-                    </p>
                   </div>
-                  {selectedPlayers.includes(player.label) && (
-                    <div className="w-4 h-4 sm:w-5 sm:h-5 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full" />
+                    {selectedPlayers.includes(player.label) && (
+                      <div className="w-4 h-4 sm:w-5 sm:h-5 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full" />
+                      </div>
+                    )}
+                  </button>
+                  
+                  {/* 1:1 게임에서 선택된 플레이어에 대한 AI/Human 선택 */}
+                  {gameType === '1v1' && selectedPlayers.includes(player.label) && (
+                    <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleVoteTypeSelect('ai')}
+                          className={cn(
+                            "flex-1 py-2 px-4 rounded-lg border-2 transition-all duration-200 font-medium text-sm",
+                            selectedVoteType === 'ai'
+                              ? "border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300"
+                              : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300"
+                          )}
+                        >
+                          AI
+                        </button>
+                        <button
+                          onClick={() => handleVoteTypeSelect('human')}
+                          className={cn(
+                            "flex-1 py-2 px-4 rounded-lg border-2 transition-all duration-200 font-medium text-sm",
+                            selectedVoteType === 'human'
+                              ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
+                              : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300"
+                          )}
+                        >
+                          Human
+                        </button>
+                      </div>
                     </div>
                   )}
-                </button>
+                </div>
               ))}
           </div>
         </div>
@@ -159,10 +208,14 @@ export default function VoteModal({
         <div className="p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700">
           <button
             onClick={handleVote}
-            disabled={selectedPlayers.length === 0 || isLoading}
+            disabled={
+              selectedPlayers.length === 0 || 
+              isLoading || 
+              (gameType === '1v1' && !selectedVoteType)
+            }
             className={cn(
               "w-full py-2.5 sm:py-3 px-4 sm:px-6 bg-purple-500 text-white rounded-lg font-semibold hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors flex items-center justify-center space-x-2 text-sm sm:text-base",
-              (selectedPlayers.length === 0 || isLoading) && "opacity-50 cursor-not-allowed"
+              (selectedPlayers.length === 0 || isLoading || (gameType === '1v1' && !selectedVoteType)) && "opacity-50 cursor-not-allowed"
             )}
           >
             {isLoading ? (
@@ -173,7 +226,7 @@ export default function VoteModal({
             ) : (
               <span>
                 {gameType === '1v1' 
-                  ? `투표하기 (${selectedPlayers.length}/1)`
+                  ? `투표하기`
                   : `투표하기 (${selectedPlayers.length}/2)`
                 }
               </span>
