@@ -64,7 +64,7 @@ export default function GamePage() {
       dispatch({ type: 'SET_GAME_TYPE', payload: '1v1' })
       dispatch({ type: 'SET_CURRENT_TOPIC', payload: '오늘 날씨가 정말 좋네요!' })
       
-      addToast('테스트 게임이 시작되었습니다!', 'success')
+      addToast('테스트 게임이 시작되었습니다!', 'success', 5000)
       
       // AI 첫 턴 시뮬레이션 (3초 후)
       console.log('Starting AI first turn simulation...')
@@ -84,12 +84,12 @@ export default function GamePage() {
         setTimeout(() => {
           console.log('Changing turn to B...')
           dispatch({ type: 'SET_CURRENT_TURN', payload: 'B' })
-          addToast('당신의 턴입니다!', 'info')
+          addToast('당신의 턴입니다!', 'info', 5000)
         }, 1000)
       }, 3000)
     } catch (error) {
       console.error('Failed to start test game:', error)
-      addToast('게임 시작에 실패했습니다.', 'error')
+      addToast('게임 시작에 실패했습니다.', 'error', 5000)
     }
   }
 
@@ -99,9 +99,9 @@ export default function GamePage() {
     if (canVote() && !state.isVoteModalOpen) {
       prepareVote()
       if (state.isVotePrepared) {
-        addToast('투표 준비를 취소했습니다!', 'info')
+        addToast('투표 준비를 취소했습니다!', 'info', 5000)
       } else {
-        addToast('투표 준비 신호를 보냈습니다!', 'info')
+        addToast('투표 준비 신호를 보냈습니다!', 'info', 5000)
       }
     }
   }
