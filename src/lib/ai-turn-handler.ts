@@ -359,6 +359,8 @@ async function generateMessage(
       conversationHistoryLength: context.conversationHistory.length,
       currentTopic: context.currentTopic
     })
+    
+    console.log('Conversation history sample:', context.conversationHistory.slice(0, 3))
 
     const aiResponse = await generateAIResponse({
       gameId: context.gameId,
@@ -411,9 +413,19 @@ async function generateMessage(
 
   } catch (error) {
     console.error('메시지 생성 오류:', error)
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace')
     
     // 오류 발생 시에도 기본 메시지 제공
-    const fallbackMessage = '안녕하세요! 오늘 날씨가 정말 좋네요. 뭐 하고 계세요?'
+    const fallbackMessages = [
+      '안녕하세요! 오늘 날씨가 정말 좋네요. 뭐 하고 계세요?',
+      '반갑습니다! 오늘 하루는 어땠나요?',
+      '안녕하세요! 재미있는 이야기 해주세요.',
+      '오늘 기분이 어떠세요?',
+      '안녕하세요! 뭐 하고 계시나요?'
+    ]
+    
+    const randomIndex = Math.floor(Math.random() * fallbackMessages.length)
+    const fallbackMessage = fallbackMessages[randomIndex]
     
     return {
       success: true,

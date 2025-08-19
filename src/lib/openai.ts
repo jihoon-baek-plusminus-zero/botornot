@@ -160,7 +160,20 @@ export async function generateAIResponse(
       throw new Error('OpenAI API에서 응답을 받지 못했습니다.')
     }
 
-    const originalResponse = openaiResponse.choices[0].message.content.trim()
+    const rawResponse = openaiResponse.choices[0].message.content || ''
+    console.log('Raw OpenAI response:', rawResponse)
+    
+    // 특수문자 및 제어문자 제거
+    const originalResponse = rawResponse
+      .replace(/[\x00-\x1F\x7F-\x9F]/g, '') // 제어문자 제거
+      .replace(/[^\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F\uA960-\uA97F\uAC00-\uD7A3\uFF00-\uFFEF\w\s.,!?;:'"()-]/g, '') // 한글, 영문, 기본 문장부호만 허용
+      .trim()
+    
+    console.log('Cleaned response:', originalResponse)
+    
+    if (!originalResponse) {
+      throw new Error('응답을 정리한 후 빈 문자열이 되었습니다.')
+    }
     
     // 응답 후처리
     const processedResponse = await postProcessResponse(originalResponse, persona, request)
