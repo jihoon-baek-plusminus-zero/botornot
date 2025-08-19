@@ -84,7 +84,8 @@ export default function GamePage() {
         setTimeout(() => {
           console.log('Changing turn to B...')
           dispatch({ type: 'SET_CURRENT_TURN', payload: 'B' })
-
+          // 사람 턴 시작 시 타이머 리셋
+          dispatch({ type: 'SET_TURN_TIME_REMAINING', payload: 20 })
         }, 1000)
       }, 3000)
     } catch (error) {

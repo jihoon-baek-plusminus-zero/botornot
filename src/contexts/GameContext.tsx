@@ -100,7 +100,7 @@ const initialState: GameState = {
   gameStatus: 'waiting',
   currentTopic: '오늘 날씨가 정말 좋네요!',
   timeRemaining: 120, // 2분 (1:1 게임 기준)
-  turnTimeRemaining: 10, // 10초 턴 제한
+  turnTimeRemaining: 20, // 20초 턴 제한
   players: [],
   myPlayerLabel: null,
   currentTurn: null,
@@ -239,6 +239,9 @@ export function GameProvider({ children }: GameProviderProps) {
     }
     dispatch({ type: 'ADD_MESSAGE', payload: newMessage })
 
+    // 턴 타이머 리셋 (매 채팅마다 20초로 리셋)
+    dispatch({ type: 'SET_TURN_TIME_REMAINING', payload: 20 })
+
     // 턴을 AI로 변경
     const nextPlayer = state.players.find(p => p.label !== state.myPlayerLabel)
     if (nextPlayer) {
@@ -374,6 +377,8 @@ export function GameProvider({ children }: GameProviderProps) {
     // 턴을 다시 사람 플레이어로 변경
     setTimeout(() => {
       dispatch({ type: 'SET_CURRENT_TURN', payload: state.myPlayerLabel! })
+      // 사람 턴으로 돌아올 때 타이머 리셋
+      dispatch({ type: 'SET_TURN_TIME_REMAINING', payload: 20 })
     }, 1000)
   }
 
@@ -611,7 +616,7 @@ export function GameProvider({ children }: GameProviderProps) {
   useEffect(() => {
     if (state.turnTimeRemaining === 0 && isMyTurn()) {
       sendMessage('Skipped')
-      dispatch({ type: 'SET_TURN_TIME_REMAINING', payload: 10 })
+      dispatch({ type: 'SET_TURN_TIME_REMAINING', payload: 20 })
     }
   }, [state.turnTimeRemaining])
 
