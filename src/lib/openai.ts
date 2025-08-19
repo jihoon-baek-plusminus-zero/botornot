@@ -327,27 +327,6 @@ async function callOpenAI(prompt: string, temperature: number): Promise<OpenAIRe
   }
 }
 
-  return {
-    id: response.id,
-    object: response.object,
-    created: response.created,
-    model: response.model,
-    choices: response.choices.map(choice => ({
-      index: choice.index,
-      message: {
-        role: 'assistant',
-        content: choice.message.content || ''
-      },
-      finish_reason: choice.finish_reason || 'stop'
-    })),
-    usage: {
-      prompt_tokens: response.usage?.prompt_tokens || 0,
-      completion_tokens: response.usage?.completion_tokens || 0,
-      total_tokens: response.usage?.total_tokens || 0
-    }
-  }
-}
-
 /**
  * 응답 후처리
  */
