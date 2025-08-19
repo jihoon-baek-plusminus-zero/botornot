@@ -427,7 +427,9 @@ export function GameProvider({ children }: GameProviderProps) {
       
       // 모든 플레이어가 투표 준비를 완료했는지 확인
       if (state.voteCount + 1 >= state.totalPlayers) {
-        // 투표 모달 열기
+        console.log('All players prepared for voting, starting voting phase')
+        // 게임 상태를 voting으로 변경하고 투표 모달 열기
+        dispatch({ type: 'SET_GAME_STATUS', payload: 'voting' })
         dispatch({ type: 'SET_VOTE_MODAL_OPEN', payload: true })
       }
     }
@@ -599,6 +601,15 @@ export function GameProvider({ children }: GameProviderProps) {
     }, 1000)
 
     return () => clearInterval(timer)
+  }, [state.gameStatus, state.timeRemaining])
+
+  // 게임 시간이 끝나면 게임 종료하고 투표 시작
+  useEffect(() => {
+    if (state.gameStatus === 'active' && state.timeRemaining === 0) {
+      console.log('Game time expired, starting voting phase')
+      dispatch({ type: 'SET_GAME_STATUS', payload: 'voting' })
+      dispatch({ type: 'SET_VOTE_MODAL_OPEN', payload: true })
+    }
   }, [state.gameStatus, state.timeRemaining])
 
   // 턴 타이머 효과

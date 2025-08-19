@@ -217,8 +217,8 @@ export default function GamePage() {
               onVote={handleVoteClick}
               placeholder="메시지를 입력하세요..."
               className="bg-transparent border-t-0 p-0"
-              disabled={!isMyTurn()}
-              isMyTurn={isMyTurn()}
+              disabled={!isMyTurn() || state.gameStatus === 'voting'}
+              isMyTurn={isMyTurn() && state.gameStatus === 'active'}
               turnTimeRemaining={state.turnTimeRemaining}
             />
           </div>
@@ -226,13 +226,13 @@ export default function GamePage() {
           {/* Vote 버튼 */}
           <button
             onClick={handleVoteClick}
-            disabled={!canVote() || state.isVoteModalOpen}
+            disabled={!canVote() || state.isVoteModalOpen || state.gameStatus === 'voting'}
             className={cn(
               "px-3 sm:px-4 py-2 sm:py-3 text-white rounded-lg hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors flex-shrink-0 flex items-center space-x-2",
               state.isVotePrepared 
                 ? "bg-green-500 hover:bg-green-600 focus:ring-green-500" 
                 : "bg-purple-500 hover:bg-purple-600 focus:ring-purple-500",
-              (!canVote() || state.isVoteModalOpen) && "opacity-50 cursor-not-allowed"
+              (!canVote() || state.isVoteModalOpen || state.gameStatus === 'voting') && "opacity-50 cursor-not-allowed"
             )}
           >
             <Vote className="w-4 h-4 sm:w-5 sm:h-5" />
