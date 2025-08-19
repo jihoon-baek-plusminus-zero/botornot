@@ -100,11 +100,9 @@ export default function MessageInput({
             maxLength={500}
           />
           <div className="flex justify-between items-center mt-1">
-            {message.length > 0 && (
-              <div className="text-xs text-gray-500 dark:text-gray-400">
-                {message.length}/500
-              </div>
-            )}
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              {message.length}/500
+            </div>
             {isMyTurn && turnTimeRemaining !== undefined && (
               <div className="text-xs text-orange-600 dark:text-orange-400 font-mono">
                 {turnTimeRemaining}s
