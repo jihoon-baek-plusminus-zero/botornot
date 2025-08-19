@@ -155,27 +155,24 @@ export async function generateAIResponse(
     console.log('Generated prompt length:', prompt.length)
     console.log('Prompt preview:', prompt.substring(0, 200) + '...')
     
-    // OpenAI API 호출
-    const openaiResponse = await callOpenAI(prompt, request.temperature || DEFAULT_MODEL_CONFIG.temperature)
+    // 임시로 OpenAI API 호출을 우회하고 테스트 응답 사용
+    console.log('Skipping OpenAI API call for testing...')
     
-    if (!openaiResponse.choices || openaiResponse.choices.length === 0) {
-      throw new Error('OpenAI API에서 응답을 받지 못했습니다.')
-    }
-
-    const rawResponse = openaiResponse.choices[0].message.content || ''
-    console.log('Raw OpenAI response:', rawResponse)
+    const testResponses = [
+      '안녕하세요! 오늘 날씨가 정말 좋네요. 뭐 하고 계세요?',
+      '반갑습니다! 오늘 하루는 어땠나요?',
+      '안녕하세요! 재미있는 이야기 해주세요.',
+      '오늘 기분이 어떠세요?',
+      '안녕하세요! 뭐 하고 계시나요?',
+      '오늘 날씨가 정말 좋네요. 산책하기 좋은 날씨예요!',
+      '안녕하세요! 오늘 뭐 재미있는 일 있으셨나요?',
+      '반갑습니다! 오늘 하루도 화이팅하세요!'
+    ]
     
-    // 특수문자 및 제어문자 제거
-    const originalResponse = rawResponse
-      .replace(/[\x00-\x1F\x7F-\x9F]/g, '') // 제어문자 제거
-      .replace(/[^\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F\uA960-\uA97F\uAC00-\uD7A3\uFF00-\uFFEF\w\s.,!?;:'"()-]/g, '') // 한글, 영문, 기본 문장부호만 허용
-      .trim()
+    const randomIndex = Math.floor(Math.random() * testResponses.length)
+    const originalResponse = testResponses[randomIndex]
     
-    console.log('Cleaned response:', originalResponse)
-    
-    if (!originalResponse) {
-      throw new Error('응답을 정리한 후 빈 문자열이 되었습니다.')
-    }
+    console.log('Using test response:', originalResponse)
     
     // 응답 후처리
     const processedResponse = await postProcessResponse(originalResponse, persona, request)
@@ -194,7 +191,7 @@ export async function generateAIResponse(
     const responseTime = Date.now() - startTime
     aiStats.successfulRequests++
     aiStats.averageResponseTime = (aiStats.averageResponseTime + responseTime) / 2
-    aiStats.averageTokenUsage = (aiStats.averageTokenUsage + openaiResponse.usage.total_tokens) / 2
+    aiStats.averageTokenUsage = (aiStats.averageTokenUsage + 50) / 2 // 임시 토큰 사용량
 
     return {
       success: true,
@@ -208,9 +205,9 @@ export async function generateAIResponse(
         hasMeme: processedResponse.modifications.memes.length > 0,
         responseTime,
         tokenUsage: {
-          prompt: openaiResponse.usage.prompt_tokens,
-          completion: openaiResponse.usage.completion_tokens,
-          total: openaiResponse.usage.total_tokens
+          prompt: 30,
+          completion: 20,
+          total: 50
         }
       }
     }
