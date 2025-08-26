@@ -274,21 +274,30 @@ async function getAIPersona(personaId: number): Promise<AIPersona | null> {
 function generatePrompt(request: GenerateAIResponseRequest, persona: AIPersona): string {
   const promptSettings = PERSONA_PROMPT_SETTINGS[request.personaId] || PERSONA_PROMPT_SETTINGS[1]
   
-  // 대화 히스토리 포맷팅
+  // 대화 히스토리 포맷팅 (안전한 문자열 처리)
   const historyText = request.conversationHistory
     .map(msg => {
-      // msg가 객체인지 확인하고 안전하게 처리
-      if (typeof msg === 'object' && msg !== null) {
-        const playerLabel = 'playerLabel' in msg ? String(msg.playerLabel || 'Unknown') : 'Unknown'
-        const content = 'content' in msg ? String(msg.content || '') : ''
-        
-        // 안전한 문자열로 변환
-        const safePlayerLabel = playerLabel.replace(/[^\w\s가-힣]/g, '')
-        const safeContent = content.replace(/[^\w\s가-힣.,!?;:'"()-]/g, '')
-        
-        return `${safePlayerLabel}: ${safeContent}`
+      try {
+        // msg가 객체인지 확인하고 안전하게 처리
+        if (typeof msg === 'object' && msg !== null) {
+          const playerLabel = 'playerLabel' in msg ? String(msg.playerLabel || 'Unknown') : 'Unknown'
+          const content = 'content' in msg ? String(msg.content || '') : ''
+          
+          // 제어 문자 제거
+          const safePlayerLabel = playerLabel.replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim()
+          const safeContent = content.replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim()
+          
+          // 빈 문자열 처리
+          const finalPlayerLabel = safePlayerLabel || 'Unknown'
+          const finalContent = safeContent || '메시지 없음'
+          
+          return `${finalPlayerLabel}: ${finalContent}`
+        }
+        return 'Unknown: Invalid message format'
+      } catch (error) {
+        console.error('메시지 포맷팅 오류:', error)
+        return 'Unknown: Error processing message'
       }
-      return 'Unknown: Invalid message format'
     })
     .join('\n')
 
@@ -316,7 +325,22 @@ ${userPrompt}
  */
 async function callOpenAI(prompt: string, temperature: number): Promise<OpenAIResponse> {
   try {
-    console.log('Calling OpenAI API with prompt length:', prompt.length)
+    // 프롬프트 안전성 검증
+    if (!prompt || typeof prompt !== 'string') {
+      throw new Error('유효하지 않은 프롬프트입니다.')
+    }
+    
+    // 프롬프트 길이 제한 (OpenAI API 제한)
+    const maxPromptLength = 4000
+    if (prompt.length > maxPromptLength) {
+      console.warn(`프롬프트가 너무 깁니다 (${prompt.length} > ${maxPromptLength}). 잘라냅니다.`)
+      prompt = prompt.substring(0, maxPromptLength) + '...'
+    }
+    
+    // 제어 문자 제거
+    const safePrompt = prompt.replace(/[\x00-\x1F\x7F-\x9F]/g, '')
+    
+    console.log('Calling OpenAI API with prompt length:', safePrompt.length)
     
     const response = await openai.chat.completions.create({
       model: DEFAULT_MODEL_CONFIG.model,
@@ -327,7 +351,7 @@ async function callOpenAI(prompt: string, temperature: number): Promise<OpenAIRe
         },
         {
           role: 'user',
-          content: prompt
+          content: safePrompt
         }
       ],
       temperature: temperature,
