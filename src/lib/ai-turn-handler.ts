@@ -304,8 +304,19 @@ async function decideVote(context: AITurnContext): Promise<AIVoteDecisionRespons
         throw new Error(aiResponse.error || 'AI 응답 생성 실패')
       }
 
+      // 안전한 문자열 처리
+      let safeResponse = aiResponse.processedResponse || ''
+      
+      // 특수 문자나 제어 문자 제거
+      safeResponse = safeResponse.replace(/[\x00-\x1F\x7F-\x9F]/g, '')
+      
+      // 빈 문자열인 경우 기본 응답 사용
+      if (!safeResponse.trim()) {
+        safeResponse = '더 대화를 이어가겠습니다.'
+      }
+
       // AI 응답 파싱
-      const decision = parseVoteDecision(aiResponse.processedResponse, context)
+      const decision = parseVoteDecision(safeResponse, context)
       
       console.log('AI Vote decision:', decision)
       
@@ -356,22 +367,6 @@ async function decideVote(context: AITurnContext): Promise<AIVoteDecisionRespons
           timePressure: timePressure,
           playerBehavior: shouldVote ? 'voting' : 'continuing'
         }
-      }
-    }
-
-    // AI 응답 파싱
-    const decision = parseVoteDecision(aiResponse.processedResponse, context)
-    
-    return {
-      success: true,
-      shouldVote: decision.shouldVote,
-      reason: decision.reason,
-      confidence: decision.confidence,
-      analysis: {
-        gameProgress: calculateGameProgress(context),
-        conversationQuality: calculateConversationQuality(context),
-        timePressure: timePressure,
-        playerBehavior: analyzePlayerBehavior(context)
       }
     }
 
@@ -433,11 +428,22 @@ async function generateMessage(
         throw new Error(aiResponse.error || 'AI 응답 생성 실패')
       }
 
-      console.log('Generated AI message:', aiResponse.processedResponse)
+      // 안전한 문자열 처리
+      let safeMessage = aiResponse.processedResponse || ''
+      
+      // 특수 문자나 제어 문자 제거
+      safeMessage = safeMessage.replace(/[\x00-\x1F\x7F-\x9F]/g, '')
+      
+      // 빈 문자열이거나 너무 짧은 경우 기본 메시지 사용
+      if (!safeMessage.trim() || safeMessage.trim().length < 2) {
+        safeMessage = '안녕하세요! 오늘 기분이 어떠세요?'
+      }
+
+      console.log('Generated AI message:', safeMessage)
       
       return {
         success: true,
-        message: aiResponse.processedResponse,
+        message: safeMessage,
         metadata: {
           responseTime: aiResponse.metadata?.responseTime || 0,
           tokenUsage: aiResponse.metadata?.tokenUsage || 0,
