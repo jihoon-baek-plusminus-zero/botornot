@@ -210,4 +210,4 @@ AI vs Human (가제)
 * **`topics` table (신규):**
     * `id` (int, pk), `content` (text) - 100개의 주제 사전 저장
 * **`ai_personas` table (신규):**
-    * `id` (int, pk), `name`, `description`, `typo_chance` (float), `meme_chance` (float), `avg_response_time_ms` (int), `avg_response_length` (int)
+    * `id` (int, pk), `name`, `description`, `typo_chance` (float), `meme_chance` (float), `avg_response_time_ms` (int), `avg_response_length` (int)# 깃 업로드 테스트
