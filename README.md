@@ -290,3 +290,42 @@ bot-or-not/
 - 실시간 채팅 기능 구현
 - 백엔드 워크플로우 분기 로직 개발
 
+### 2024-12-19 - 백엔드 워크플로우 시스템 구현
+**개발 내용:**
+- 타입 정의 시스템 구축 (src/types/chat.ts):
+  - PlayerType: 'human' | 'ai'
+  - Player, ChatMessage, ChatRoom, ChatRoomState 인터페이스
+- 채팅방 관리자 클래스 구현 (src/utils/chatRoomManager.ts):
+  - 플레이어 관리 시스템 (total_player, player[0-4])
+  - 프로필 이름 랜덤 할당 (Player A, B, C, D, E)
+  - 차례제 대화 시스템 (A → B → C → D → E 순서)
+  - AI용 대화 내역 포맷 생성
+- AI 서비스 구현 (src/utils/aiService.ts):
+  - OpenAI API 호출 기능
+  - 개발용 모의 응답 시스템
+  - AI 컨텍스트 포맷 처리
+- API 엔드포인트 구현:
+  - POST /api/chatroom/create: 채팅방 생성
+  - GET /api/chatroom/[roomId]: 채팅방 상태 조회
+  - POST /api/chatroom/[roomId]: 메시지 전송 및 AI 응답 처리
+
+**백엔드 워크플로우:**
+1. **채팅방 생성**: total_player와 playerTypes 배열로 채팅방 초기화
+2. **프로필 할당**: Player A-E 중에서 랜덤으로 프로필 이름 배정
+3. **차례제 시스템**: Player A부터 시작하여 순서대로 대화
+4. **사람 플레이어**: 입력창 활성화 → 메시지 전송 → 서버 처리
+5. **AI 플레이어**: 자동으로 AI API 호출 → 컨텍스트 전달 → 응답 생성
+6. **자동 차례 이동**: 메시지 전송 후 자동으로 다음 플레이어 차례로 이동
+
+**핵심 기능:**
+- 혼합 플레이어 구성 지원 (사람 3명 + AI 3명)
+- 각 AI의 독립적 인격체 대화
+- 실시간 차례제 관리
+- AI 컨텍스트 기반 응답 생성
+- 메모리 기반 채팅방 저장소 (개발용)
+
+**다음 단계:**
+- 프론트엔드와 백엔드 연동
+- 실시간 채팅 UI 업데이트
+- 채팅방 생성 및 입장 기능 구현
+
