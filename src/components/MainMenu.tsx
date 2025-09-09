@@ -1,7 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-
 interface MenuButtonProps {
   title: string
   description: string
@@ -31,7 +29,6 @@ const MenuButton = ({ title, description, icon, onClick }: MenuButtonProps) => {
 }
 
 export default function MainMenu() {
-  const [selectedButton, setSelectedButton] = useState<string | null>(null)
 
   const menuItems = [
     {
@@ -67,8 +64,7 @@ export default function MainMenu() {
   ]
 
   const handleButtonClick = (id: string) => {
-    setSelectedButton(id)
-    // 현재는 기능이 없으므로 선택 상태만 변경
+    // 현재는 기능이 없으므로 콘솔 로그만 출력
     console.log(`${id} 버튼이 클릭되었습니다.`)
   }
 
@@ -77,45 +73,29 @@ export default function MainMenu() {
       <div className="container mx-auto px-4">
         {/* 헤더 */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl md:text-7xl font-bold text-gradient mb-6 animate-fade-in">
+          <h1 className="text-5xl md:text-7xl font-bold text-gradient mb-6">
             Bot or Not
           </h1>
-          <p className="text-xl text-dark-text-secondary mb-4 animate-slide-up">
+          <p className="text-xl text-dark-text-secondary mb-4">
             AI 봇과 인간을 구분하는 웹 애플리케이션
           </p>
-          <div className="w-24 h-1 bg-gradient-to-r from-dark-accent to-blue-400 mx-auto rounded-full animate-pulse-slow"></div>
+          <div className="w-24 h-1 bg-gradient-to-r from-dark-accent to-blue-400 mx-auto rounded-full"></div>
         </div>
 
         {/* 메뉴 버튼들 */}
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {menuItems.map((item, index) => (
-              <div
+            {menuItems.map((item) => (
+              <MenuButton
                 key={item.id}
-                className="animate-slide-up"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <MenuButton
-                  title={item.title}
-                  description={item.description}
-                  icon={item.icon}
-                  onClick={() => handleButtonClick(item.id)}
-                />
-              </div>
+                title={item.title}
+                description={item.description}
+                icon={item.icon}
+                onClick={() => handleButtonClick(item.id)}
+              />
             ))}
           </div>
         </div>
-
-        {/* 선택된 버튼 표시 */}
-        {selectedButton && (
-          <div className="mt-8 text-center animate-fade-in">
-            <div className="inline-block px-6 py-3 bg-dark-accent/20 border border-dark-accent/30 rounded-lg">
-              <p className="text-dark-accent font-medium">
-                {menuItems.find(item => item.id === selectedButton)?.title} 선택됨
-              </p>
-            </div>
-          </div>
-        )}
 
         {/* 하단 정보 */}
         <div className="mt-16 text-center">
