@@ -106,6 +106,9 @@ async function handleSendMessage(
     // 다음 차례로 이동
     roomManager.nextTurn()
     
+    // 채팅방 상태 저장
+    chatRoomStore.setRoom(roomId, roomManager)
+    
     // 현재 차례인 플레이어가 AI인지 확인
     const currentPlayer = roomManager.getCurrentPlayer()
     if (currentPlayer && currentPlayer.type === 'ai') {
@@ -120,6 +123,9 @@ async function handleSendMessage(
         // 다시 다음 차례로 이동
         roomManager.nextTurn()
         
+        // AI 응답 후 채팅방 상태 저장
+        chatRoomStore.setRoom(roomId, roomManager)
+        
         return NextResponse.json({
           success: true,
           message: newMessage,
@@ -133,6 +139,9 @@ async function handleSendMessage(
           '죄송합니다. 응답을 생성할 수 없습니다.'
         )
         roomManager.nextTurn()
+        
+        // 에러 메시지 후 채팅방 상태 저장
+        chatRoomStore.setRoom(roomId, roomManager)
         
         return NextResponse.json({
           success: true,

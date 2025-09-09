@@ -1,7 +1,7 @@
 import { Player, ChatRoom, ChatMessage, PlayerType } from '@/types/chat'
 
 export class ChatRoomManager {
-  private room: ChatRoom
+  public room: ChatRoom
 
   constructor(totalPlayers: number, playerTypes: PlayerType[]) {
     this.room = this.initializeRoom(totalPlayers, playerTypes)
