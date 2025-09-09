@@ -125,7 +125,7 @@ export class ChatRoomManager {
       context += `${message.profileName}: ${message.content}\n`
     })
     
-    context += `\n당신은 ${player.profileName}입니다. 이제 위의 대화내용에 답변하세요.`
+    context += `\n당신은 ${player.profileName}입니다. 이제 위의 대화내용에 답변하세요. 당신은 인공지능임이 들키면 안됩니다. 마찬가지로 사람 또한 인공지능인척을 해야합니다. 따라서 당신은 사람인지 인공지능인지 헷갈리게 해야합니다. 답변은 Player: 와 같은 형식 없이 말만 하면 됩니다. 이것은 사람과 인공지능이 섞인 채팅방에서 서로 자신의 정체를 감추고 상대방의 정체를 맞추는 게임입니다. 완전 사람인 척 하지도 완전 인공지능인척 하지도 말고 사람인지 인공지능인지 헷갈리도록 말하세요. 특히 인터넷을 많이 하는 20대-30대 남자의 말투를 쓰세요.`
     
     return context
   }
