@@ -205,3 +205,30 @@ bot-or-not/
 - 봇 감지 알고리즘 개발
 - 백엔드 API 구조 설계
 
+### 2024-12-19 - CSS 및 설정 오류 수정
+**개발 내용:**
+- Tailwind CSS `dark` 클래스 오류 수정
+  - globals.css에서 `@apply dark` 제거
+  - layout.tsx에서 `className="dark"` 제거
+  - 커스텀 다크테마 색상으로 직접 적용
+- next.config.js 설정 오류 수정
+  - `experimental.appDir` 제거 (Next.js 14에서 기본 지원)
+  - `env.CUSTOM_KEY` 제거 (불필요한 환경변수)
+- 개발 서버 재시작 및 컴파일 오류 해결
+
+**변경사항:**
+- src/styles/globals.css: `dark` 클래스 사용 제거
+- src/app/layout.tsx: HTML 태그에서 `dark` 클래스 제거
+- next.config.js: 불필요한 설정 제거
+- 개발 서버 정상 실행 확인
+
+**해결된 오류:**
+- "The `dark` class does not exist" 오류 해결
+- "Invalid next.config.js options detected" 경고 해결
+- 컴파일 오류 완전 해결
+
+**다음 단계:**
+- 메인 화면 UI 테스트 및 최적화
+- 각 버튼별 기능 구현 시작
+- 봇 감지 알고리즘 개발
+
