@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 기본 다크테마 스타일 */
+@layer base {
+  html {
+    @apply dark;
+  }
+  
+  body {
+    @apply bg-dark-bg text-dark-text font-sans;
+    @apply min-h-screen;
+  }
+  
+  * {
+    @apply border-dark-border;
+  }
+}
+
+/* 커스텀 컴포넌트 스타일 */
+@layer components {
+  .btn-primary {
+    @apply bg-dark-accent hover:bg-dark-accent-hover text-white;
+    @apply px-4 py-2 rounded-lg font-medium;
+    @apply transition-colors duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-dark-accent focus:ring-offset-2 focus:ring-offset-dark-bg;
+  }
+  
+  .btn-secondary {
+    @apply bg-dark-card hover:bg-dark-border text-dark-text;
+    @apply px-4 py-2 rounded-lg font-medium;
+    @apply transition-colors duration-200;
+    @apply border border-dark-border;
+    @apply focus:outline-none focus:ring-2 focus:ring-dark-accent focus:ring-offset-2 focus:ring-offset-dark-bg;
+  }
+  
+  .card {
+    @apply bg-dark-card border border-dark-border rounded-xl;
+    @apply p-6 shadow-lg;
+    @apply transition-all duration-200;
+  }
+  
+  .card:hover {
+    @apply shadow-xl border-dark-accent/20;
+  }
+  
+  .input-field {
+    @apply bg-dark-card border border-dark-border rounded-lg;
+    @apply px-4 py-3 text-dark-text placeholder-dark-text-secondary;
+    @apply focus:outline-none focus:ring-2 focus:ring-dark-accent focus:border-transparent;
+    @apply transition-all duration-200;
+  }
+  
+  .text-gradient {
+    @apply bg-gradient-to-r from-dark-accent to-blue-400 bg-clip-text text-transparent;
+  }
+  
+  .glass-effect {
+    @apply bg-dark-card/80 backdrop-blur-sm border border-dark-border/50;
+  }
+}
+
+/* 애니메이션 유틸리티 */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+/* 스크롤바 스타일링 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-dark-bg;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-dark-border rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-dark-text-secondary;
+}
+
+/* 선택 텍스트 스타일 */
+::selection {
+  @apply bg-dark-accent/30 text-dark-text;
+}
+
+/* 포커스 스타일 */
+:focus-visible {
+  @apply outline-none ring-2 ring-dark-accent ring-offset-2 ring-offset-dark-bg;
+}
