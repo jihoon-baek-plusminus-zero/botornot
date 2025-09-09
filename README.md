@@ -426,3 +426,29 @@ bot-or-not/
 - 다른 채팅방 타입 구현
 - 실시간 업데이트 최적화
 
+### 2024-12-19 - 메시지 전송 오류 수정
+**개발 내용:**
+- API 엔드포인트에서 roomId 스코프 오류 해결:
+  - `handleSendMessage` 함수에서 `roomId` 변수 접근 불가 문제
+  - `roomId`를 함수 매개변수로 전달하도록 수정
+  - 함수 시그니처 업데이트: `handleSendMessage(roomManager, playerId, message, roomId)`
+- 메시지 전송 로직 완전 복구:
+  - 500 Internal Server Error 해결
+  - 채팅방 상태 저장 기능 정상화
+  - AI 응답 생성 및 저장 로직 정상화
+
+**해결된 문제:**
+- "roomId is not defined" ReferenceError
+- 메시지 전송 시 500 Internal Server Error
+- AI 채팅방에서 메시지 전송 불가 문제
+
+**기술적 개선:**
+- 함수 매개변수 전달 방식 개선
+- 스코프 문제 해결로 안정성 향상
+- 에러 처리 및 로깅 개선
+
+**다음 단계:**
+- AI 채팅방 기능 최종 테스트
+- 다른 채팅방 타입 구현
+- 실시간 업데이트 최적화
+

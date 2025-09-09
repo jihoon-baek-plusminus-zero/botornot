@@ -53,7 +53,7 @@ export async function POST(
 
     switch (action) {
       case 'send_message':
-        return await handleSendMessage(roomManager, playerId, message)
+        return await handleSendMessage(roomManager, playerId, message, roomId)
       
       case 'get_room_state':
         const roomState = roomManager.getRoomState()
@@ -81,7 +81,8 @@ export async function POST(
 async function handleSendMessage(
   roomManager: ChatRoomManager,
   playerId: number,
-  message: string
+  message: string,
+  roomId: string
 ) {
   try {
     // 플레이어가 현재 차례인지 확인
