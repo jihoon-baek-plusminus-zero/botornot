@@ -9,6 +9,7 @@ export default function ChatRoom() {
   const [room, setRoom] = useState<ChatRoom | null>(null)
   const [currentPlayerId, setCurrentPlayerId] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isProcessingAI, setIsProcessingAI] = useState(false)
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -21,13 +22,16 @@ export default function ChatRoom() {
       fetchRoomState()
       
       // 실시간 폴링 설정 (2초마다 최신 메시지 조회)
+      // AI 처리 중에는 폴링 중단
       const interval = setInterval(() => {
-        fetchRoomState()
+        if (!isProcessingAI) {
+          fetchRoomState()
+        }
       }, 2000)
       
       return () => clearInterval(interval)
     }
-  }, [roomId, playerId])
+  }, [roomId, playerId, isProcessingAI])
 
   const fetchRoomState = async () => {
     if (!roomId) return
@@ -44,8 +48,10 @@ export default function ChatRoom() {
         
         // AI 차례인지 확인하고 AI 응답 처리
         const currentPlayer = data.room.players.find((p: any) => p.isActive)
-        if (currentPlayer && currentPlayer.type === 'ai') {
+        if (currentPlayer && currentPlayer.type === 'ai' && !isProcessingAI) {
+          setIsProcessingAI(true)
           await processAITurn()
+          setIsProcessingAI(false)
         }
       } else {
         const errorData = await response.json()
@@ -73,6 +79,7 @@ export default function ChatRoom() {
       if (response.ok) {
         const data = await response.json()
         if (data.success) {
+          // AI 응답이 완료된 후에만 화면에 반영
           setRoom(data.room)
         }
       }
