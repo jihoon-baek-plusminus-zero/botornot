@@ -142,3 +142,30 @@ bot-or-not/
 - 기본 컴포넌트 구조 설계
 - 봇 감지 기능 구현 계획
 
+### 2024-12-19 - GitHub 저장소 설정 및 업로드
+**개발 내용:**
+- README.md에 GitHub 저장소 주소 추가: https://github.com/jihoon-baek-plusminus-zero/botornot.git
+- Git 저장소 초기화 (git init)
+- GitHub 원격 저장소 연결 (git remote add origin)
+- 모든 프로젝트 파일 스테이징 (git add .)
+- 초기 커밋 생성: "Initial project setup: Next.js app with dark theme and basic structure"
+- GitHub에 프로젝트 업로드 (git push -u origin main)
+
+**변경사항:**
+- GitHub 저장소 주소가 README.md에 기록됨
+- 로컬 프로젝트가 GitHub에 성공적으로 업로드됨
+- 총 13개 파일이 업로드됨 (576줄 추가)
+- main 브랜치가 기본 브랜치로 설정됨
+
+**업로드된 파일들:**
+- .eslintrc.json, .gitignore, README.md
+- next.config.js, package.json, postcss.config.js
+- src/app/layout.tsx, src/app/page.tsx
+- src/styles/globals.css, tailwind.config.js
+- tsconfig.json, vercel.json, onlyforperson.md
+
+**다음 단계:**
+- Vercel을 통한 자동 배포 설정
+- 의존성 설치 및 개발 서버 실행 테스트
+- 봇 감지 기능 구현 시작
+
