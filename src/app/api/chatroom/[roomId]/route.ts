@@ -55,6 +55,9 @@ export async function POST(
       case 'send_message':
         return await handleSendMessage(roomManager, playerId, message, roomId)
       
+      case 'process_ai_turn':
+        return await handleProcessAITurn(roomManager, roomId)
+      
       case 'get_room_state':
         const roomState = roomManager.getRoomState()
         return NextResponse.json({
@@ -110,49 +113,7 @@ async function handleSendMessage(
     // 채팅방 상태 저장
     chatRoomStore.setRoom(roomId, roomManager)
     
-    // 현재 차례인 플레이어가 AI인지 확인
-    const currentPlayer = roomManager.getCurrentPlayer()
-    if (currentPlayer && currentPlayer.type === 'ai') {
-      // AI 응답 생성
-      const aiContext = roomManager.generateAIContext(currentPlayer.id)
-      const aiResponse = await aiService.generateResponse(aiContext)
-      
-      if (aiResponse.success && aiResponse.message) {
-        // AI 메시지 추가
-        const aiMessage = roomManager.addMessage(currentPlayer.id, aiResponse.message)
-        
-        // 다시 다음 차례로 이동
-        roomManager.nextTurn()
-        
-        // AI 응답 후 채팅방 상태 저장
-        chatRoomStore.setRoom(roomId, roomManager)
-        
-        return NextResponse.json({
-          success: true,
-          message: newMessage,
-          aiMessage: aiMessage,
-          room: roomManager.getRoomState()
-        })
-      } else {
-        // AI 응답 실패 시 에러 메시지 추가
-        const errorMessage = roomManager.addMessage(
-          currentPlayer.id, 
-          '죄송합니다. 응답을 생성할 수 없습니다.'
-        )
-        roomManager.nextTurn()
-        
-        // 에러 메시지 후 채팅방 상태 저장
-        chatRoomStore.setRoom(roomId, roomManager)
-        
-        return NextResponse.json({
-          success: true,
-          message: newMessage,
-          aiMessage: errorMessage,
-          room: roomManager.getRoomState()
-        })
-      }
-    }
-
+    // 사용자 메시지만 먼저 반환 (AI 응답은 별도로 처리)
     return NextResponse.json({
       success: true,
       message: newMessage,
@@ -163,6 +124,65 @@ async function handleSendMessage(
     console.error('메시지 전송 오류:', error)
     return NextResponse.json(
       { error: '메시지 전송 중 오류가 발생했습니다.' },
+      { status: 500 }
+    )
+  }
+}
+
+async function handleProcessAITurn(
+  roomManager: ChatRoomManager,
+  roomId: string
+) {
+  try {
+    const currentPlayer = roomManager.getCurrentPlayer()
+    if (!currentPlayer || currentPlayer.type !== 'ai') {
+      return NextResponse.json({
+        success: false,
+        message: '현재 AI 차례가 아닙니다.'
+      })
+    }
+
+    // AI 응답 생성
+    const aiContext = roomManager.generateAIContext(currentPlayer.id)
+    const aiResponse = await aiService.generateResponse(aiContext)
+    
+    if (aiResponse.success && aiResponse.message) {
+      // AI 메시지 추가
+      const aiMessage = roomManager.addMessage(currentPlayer.id, aiResponse.message)
+      
+      // 다음 차례로 이동
+      roomManager.nextTurn()
+      
+      // AI 응답 후 채팅방 상태 저장
+      chatRoomStore.setRoom(roomId, roomManager)
+      
+      return NextResponse.json({
+        success: true,
+        aiMessage: aiMessage,
+        room: roomManager.getRoomState()
+      })
+    } else {
+      // AI 응답 실패 시 에러 메시지 추가
+      const errorMessage = roomManager.addMessage(
+        currentPlayer.id, 
+        '죄송합니다. 응답을 생성할 수 없습니다.'
+      )
+      roomManager.nextTurn()
+      
+      // 에러 메시지 후 채팅방 상태 저장
+      chatRoomStore.setRoom(roomId, roomManager)
+      
+      return NextResponse.json({
+        success: true,
+        aiMessage: errorMessage,
+        room: roomManager.getRoomState()
+      })
+    }
+
+  } catch (error) {
+    console.error('AI 차례 처리 오류:', error)
+    return NextResponse.json(
+      { error: 'AI 차례 처리 중 오류가 발생했습니다.' },
       { status: 500 }
     )
   }

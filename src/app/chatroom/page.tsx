@@ -41,12 +41,43 @@ export default function ChatRoom() {
         const data = await response.json()
         console.log('채팅방 데이터:', data)
         setRoom(data.room)
+        
+        // AI 차례인지 확인하고 AI 응답 처리
+        const currentPlayer = data.room.players.find((p: any) => p.isActive)
+        if (currentPlayer && currentPlayer.type === 'ai') {
+          await processAITurn()
+        }
       } else {
         const errorData = await response.json()
         console.error('채팅방 조회 실패:', errorData)
       }
     } catch (error) {
       console.error('채팅방 상태 조회 오류:', error)
+    }
+  }
+
+  const processAITurn = async () => {
+    if (!roomId) return
+    
+    try {
+      const response = await fetch(`/api/chatroom/${roomId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'process_ai_turn'
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success) {
+          setRoom(data.room)
+        }
+      }
+    } catch (error) {
+      console.error('AI 차례 처리 오류:', error)
     }
   }
 
