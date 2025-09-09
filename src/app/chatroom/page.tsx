@@ -26,10 +26,17 @@ export default function ChatRoom() {
     if (!roomId) return
     
     try {
+      console.log(`채팅방 상태 조회 시작: ${roomId}`)
       const response = await fetch(`/api/chatroom/${roomId}`)
+      console.log(`응답 상태: ${response.status}`)
+      
       if (response.ok) {
         const data = await response.json()
+        console.log('채팅방 데이터:', data)
         setRoom(data.room)
+      } else {
+        const errorData = await response.json()
+        console.error('채팅방 조회 실패:', errorData)
       }
     } catch (error) {
       console.error('채팅방 상태 조회 오류:', error)
@@ -85,7 +92,14 @@ export default function ChatRoom() {
   if (!room) {
     return (
       <div className="h-screen bg-dark-bg flex items-center justify-center">
-        <div className="text-dark-text">채팅방을 불러오는 중...</div>
+        <div className="text-center">
+          <div className="text-dark-text mb-4">채팅방을 불러오는 중...</div>
+          {roomId && (
+            <div className="text-dark-text-secondary text-sm">
+              Room ID: {roomId}
+            </div>
+          )}
+        </div>
       </div>
     )
   }

@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ChatRoomManager } from '@/utils/chatRoomManager'
+import { chatRoomStore } from '@/utils/chatRoomStore'
 import { PlayerType } from '@/types/chat'
-
-// 메모리 기반 채팅방 저장소 (실제로는 데이터베이스 사용)
-const chatRooms = new Map<string, ChatRoomManager>()
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,8 +38,8 @@ export async function POST(request: NextRequest) {
     const roomManager = new ChatRoomManager(totalPlayers, playerTypes)
     const room = roomManager.startGame()
     
-    // 메모리에 저장
-    chatRooms.set(room.id, roomManager)
+    // 전역 저장소에 저장
+    chatRoomStore.setRoom(room.id, roomManager)
 
     return NextResponse.json({
       success: true,

@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ChatRoomManager } from '@/utils/chatRoomManager'
+import { chatRoomStore } from '@/utils/chatRoomStore'
 import { aiService } from '@/utils/aiService'
-
-// 메모리 기반 채팅방 저장소 (실제로는 데이터베이스 사용)
-const chatRooms = new Map<string, ChatRoomManager>()
 
 export async function GET(
   request: NextRequest,
@@ -11,7 +9,8 @@ export async function GET(
 ) {
   try {
     const { roomId } = params
-    const roomManager = chatRooms.get(roomId)
+    console.log(`채팅방 조회 요청: ${roomId}`)
+    const roomManager = chatRoomStore.getRoom(roomId)
 
     if (!roomManager) {
       return NextResponse.json(
@@ -44,7 +43,7 @@ export async function POST(
     const body = await request.json()
     const { action, playerId, message } = body
 
-    const roomManager = chatRooms.get(roomId)
+    const roomManager = chatRoomStore.getRoom(roomId)
     if (!roomManager) {
       return NextResponse.json(
         { error: '채팅방을 찾을 수 없습니다.' },
