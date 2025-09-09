@@ -66,9 +66,33 @@ export default function MainMenu() {
     }
   ]
 
-  const handleButtonClick = (id: string) => {
+  const handleButtonClick = async (id: string) => {
     if (id === 'chatroom') {
       router.push('/chatroom')
+    } else if (id === 'ai-chat') {
+      // AI 채팅방 생성 및 입장
+      try {
+        const response = await fetch('/api/chatroom/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            totalPlayers: 2,
+            playerTypes: ['human', 'ai'] // 첫 번째는 사람(나), 두 번째는 AI
+          })
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          // 채팅방 ID와 플레이어 ID를 URL 파라미터로 전달
+          router.push(`/chatroom?roomId=${data.room.id}&playerId=0`)
+        } else {
+          console.error('AI 채팅방 생성 실패')
+        }
+      } catch (error) {
+        console.error('AI 채팅방 생성 중 오류:', error)
+      }
     } else {
       // 다른 버튼들은 아직 기능이 없으므로 콘솔 로그만 출력
       console.log(`${id} 버튼이 클릭되었습니다.`)

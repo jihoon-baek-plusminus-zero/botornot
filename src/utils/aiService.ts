@@ -9,14 +9,14 @@ export class AIService {
   private apiUrl: string
 
   constructor() {
-    // 환경변수에서 API 키와 URL 가져오기
+    // 환경변수에서 API 키 가져오기 (보안을 위해 코드에서 제거)
     this.apiKey = process.env.OPENAI_API_KEY || ''
-    this.apiUrl = process.env.OPENAI_API_URL || 'https://api.openai.com/v1/chat/completions'
+    this.apiUrl = 'https://api.openai.com/v1/chat/completions'
   }
 
   async generateResponse(context: string): Promise<AIResponse> {
     try {
-      // 실제 AI API 호출 (현재는 모의 응답)
+      // 실제 AI API 호출
       const response = await this.callAIAPI(context)
       return {
         success: true,
@@ -32,13 +32,7 @@ export class AIService {
   }
 
   private async callAIAPI(context: string): Promise<string> {
-    // 실제 구현에서는 OpenAI API나 다른 AI 서비스 호출
-    // 현재는 개발용 모의 응답
-    
-    if (!this.apiKey) {
-      // API 키가 없으면 모의 응답 반환
-      return this.generateMockResponse(context)
-    }
+    // OpenAI API 호출
 
     try {
       const response = await fetch(this.apiUrl, {
@@ -48,7 +42,7 @@ export class AIService {
           'Authorization': `Bearer ${this.apiKey}`
         },
         body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
+          model: 'gpt-4o-mini',
           messages: [
             {
               role: 'user',
