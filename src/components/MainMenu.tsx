@@ -1,5 +1,7 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
+
 interface MenuButtonProps {
   title: string
   description: string
@@ -29,6 +31,7 @@ const MenuButton = ({ title, description, icon, onClick }: MenuButtonProps) => {
 }
 
 export default function MainMenu() {
+  const router = useRouter()
 
   const menuItems = [
     {
@@ -64,8 +67,12 @@ export default function MainMenu() {
   ]
 
   const handleButtonClick = (id: string) => {
-    // 현재는 기능이 없으므로 콘솔 로그만 출력
-    console.log(`${id} 버튼이 클릭되었습니다.`)
+    if (id === 'chatroom') {
+      router.push('/chatroom')
+    } else {
+      // 다른 버튼들은 아직 기능이 없으므로 콘솔 로그만 출력
+      console.log(`${id} 버튼이 클릭되었습니다.`)
+    }
   }
 
   return (
