@@ -19,6 +19,13 @@ export default function ChatRoom() {
     if (roomId && playerId) {
       setCurrentPlayerId(parseInt(playerId))
       fetchRoomState()
+      
+      // 실시간 폴링 설정 (2초마다 최신 메시지 조회)
+      const interval = setInterval(() => {
+        fetchRoomState()
+      }, 2000)
+      
+      return () => clearInterval(interval)
     }
   }, [roomId, playerId])
 
@@ -64,13 +71,6 @@ export default function ChatRoom() {
         const data = await response.json()
         setRoom(data.room)
         setMessage('')
-        
-        // AI 응답이 필요한 경우 잠시 후 AI 응답 요청
-        if (data.needsAIResponse) {
-          setTimeout(async () => {
-            await getAIResponse()
-          }, 1000) // 1초 후 AI 응답 요청
-        }
       } else {
         const errorData = await response.json()
         console.error('메시지 전송 실패:', errorData.error)
@@ -79,30 +79,6 @@ export default function ChatRoom() {
       console.error('메시지 전송 중 오류:', error)
     } finally {
       setIsLoading(false)
-    }
-  }
-
-  const getAIResponse = async () => {
-    try {
-      const response = await fetch(`/api/chatroom/${roomId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'get_ai_response'
-        })
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setRoom(data.room)
-      } else {
-        const errorData = await response.json()
-        console.error('AI 응답 실패:', errorData.error)
-      }
-    } catch (error) {
-      console.error('AI 응답 중 오류:', error)
     }
   }
 
