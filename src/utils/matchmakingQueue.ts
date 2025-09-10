@@ -1,5 +1,7 @@
 import fs from 'fs'
 import path from 'path'
+import { ChatRoomManager } from './chatRoomManager'
+import { ChatRoomStore } from './chatRoomStore'
 
 interface QueueUser {
   id: string
@@ -131,13 +133,11 @@ class MatchmakingQueueManager {
 
   private createHumanVsHumanRoom(user1: QueueUser, user2: QueueUser): void {
     // 기존 채팅방 생성 로직 사용
-    const { ChatRoomManager } = require('./chatRoomManager')
     const chatRoomManager = new ChatRoomManager(2, ['human', 'human'])
     
     const roomId = chatRoomManager.room.id
     
     // 채팅방 저장
-    const { ChatRoomStore } = require('./chatRoomStore')
     const chatRoomStore = ChatRoomStore.getInstance()
     chatRoomStore.saveRoom(chatRoomManager.room)
     
@@ -155,13 +155,11 @@ class MatchmakingQueueManager {
 
   private createHumanVsAIRoom(user: QueueUser): void {
     // 기존 채팅방 생성 로직 사용
-    const { ChatRoomManager } = require('./chatRoomManager')
     const chatRoomManager = new ChatRoomManager(2, ['human', 'ai'])
     
     const roomId = chatRoomManager.room.id
     
     // 채팅방 저장
-    const { ChatRoomStore } = require('./chatRoomStore')
     const chatRoomStore = ChatRoomStore.getInstance()
     chatRoomStore.saveRoom(chatRoomManager.room)
     
