@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { ChatRoomManager } from './chatRoomManager'
-import { ChatRoomStore } from './chatRoomStore'
+import { chatRoomStore } from './chatRoomStore'
 
 interface QueueUser {
   id: string
@@ -138,8 +138,7 @@ class MatchmakingQueueManager {
     const roomId = chatRoomManager.room.id
     
     // 채팅방 저장
-    const chatRoomStore = ChatRoomStore.getInstance()
-    chatRoomStore.saveRoom(chatRoomManager.room)
+    chatRoomStore.setRoom(roomId, chatRoomManager)
     
     // 사용자들에게 매칭 정보 설정
     user1.matched = true
@@ -160,8 +159,7 @@ class MatchmakingQueueManager {
     const roomId = chatRoomManager.room.id
     
     // 채팅방 저장
-    const chatRoomStore = ChatRoomStore.getInstance()
-    chatRoomStore.saveRoom(chatRoomManager.room)
+    chatRoomStore.setRoom(roomId, chatRoomManager)
     
     // 사용자에게 매칭 정보 설정
     user.matched = true
@@ -190,4 +188,4 @@ class MatchmakingQueueManager {
   }
 }
 
-export default MatchmakingQueueManager
+export const matchmakingQueueManager = MatchmakingQueueManager.getInstance()
