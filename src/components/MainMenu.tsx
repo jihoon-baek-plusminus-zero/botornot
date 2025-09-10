@@ -67,7 +67,10 @@ export default function MainMenu() {
   ]
 
   const handleButtonClick = async (id: string) => {
-    if (id === 'chatroom') {
+    if (id === '1v1') {
+      // 1:1 매치메이킹 페이지로 이동
+      router.push('/waiting-1v1')
+    } else if (id === 'chatroom') {
       router.push('/chatroom')
     } else if (id === 'ai-chat') {
       // AI 채팅방 생성 및 입장
