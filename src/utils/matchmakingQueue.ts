@@ -16,6 +16,7 @@ interface MatchmakingQueue {
   users: QueueUser[]
   currentPosition: number
   lastMatchTime: number
+  matchedUsers: { [sessionId: string]: { roomId: string; playerId: number } }
 }
 
 class MatchmakingQueueManager {
@@ -48,7 +49,8 @@ class MatchmakingQueueManager {
     return {
       users: [],
       currentPosition: 1,
-      lastMatchTime: 0
+      lastMatchTime: 0,
+      matchedUsers: {}
     }
   }
 
@@ -96,6 +98,18 @@ class MatchmakingQueueManager {
   }
 
   public getQueueStatus(sessionId: string): { position: number; matched: boolean; roomId?: string; playerId?: number } {
+    // 먼저 매칭된 사용자 목록에서 확인
+    if (this.queue.matchedUsers[sessionId]) {
+      const matchInfo = this.queue.matchedUsers[sessionId]
+      return {
+        position: 0,
+        matched: true,
+        roomId: matchInfo.roomId,
+        playerId: matchInfo.playerId
+      }
+    }
+
+    // 큐에서 사용자 찾기
     const user = this.queue.users.find(u => u.sessionId === sessionId)
     if (!user) {
       return { position: 0, matched: false }
@@ -112,6 +126,8 @@ class MatchmakingQueueManager {
   private tryMatching(): void {
     const unmatchedUsers = this.queue.users.filter(user => !user.matched)
     
+    console.log(`매칭 시도: ${unmatchedUsers.length}명의 매칭되지 않은 사용자`)
+    
     if (unmatchedUsers.length >= 3) {
       // 1-2번 매칭 (사람 vs 사람)
       const user1 = unmatchedUsers[0]
@@ -120,11 +136,16 @@ class MatchmakingQueueManager {
       // 3번은 AI와 매칭
       const user3 = unmatchedUsers[2]
 
+      console.log(`매칭 시작: ${user1.id}, ${user2.id}, ${user3.id}`)
+
       // 1:1 대화방 생성 (사람 vs 사람)
       this.createHumanVsHumanRoom(user1, user2)
       
       // 1:AI 대화방 생성 (사람 vs AI)
       this.createHumanVsAIRoom(user3)
+
+      // 매칭 상태 저장
+      this.saveQueue()
 
       // 매칭된 사용자들을 큐에서 제거
       this.removeMatchedUsers([user1.id, user2.id, user3.id])
@@ -149,6 +170,10 @@ class MatchmakingQueueManager {
     user2.roomId = roomId
     user2.playerId = 1
 
+    // 매칭된 사용자 정보를 별도 저장
+    this.queue.matchedUsers[user1.sessionId] = { roomId, playerId: 0 }
+    this.queue.matchedUsers[user2.sessionId] = { roomId, playerId: 1 }
+
     console.log(`1:1 매칭 완료 (사람 vs 사람): ${user1.id} + ${user2.id} → ${roomId}`)
   }
 
@@ -166,6 +191,9 @@ class MatchmakingQueueManager {
     user.roomId = roomId
     user.playerId = 0
 
+    // 매칭된 사용자 정보를 별도 저장
+    this.queue.matchedUsers[user.sessionId] = { roomId, playerId: 0 }
+
     console.log(`1:AI 매칭 완료 (사람 vs AI): ${user.id} → ${roomId}`)
   }
 
@@ -176,8 +204,16 @@ class MatchmakingQueueManager {
 
   public leaveQueue(sessionId: string): void {
     this.queue.users = this.queue.users.filter(user => user.sessionId !== sessionId)
+    // 매칭된 사용자 정보도 제거
+    delete this.queue.matchedUsers[sessionId]
     this.saveQueue()
     console.log(`1:1 큐에서 나감: ${sessionId}`)
+  }
+
+  public clearMatchedUser(sessionId: string): void {
+    delete this.queue.matchedUsers[sessionId]
+    this.saveQueue()
+    console.log(`매칭된 사용자 정보 정리: ${sessionId}`)
   }
 
   public getQueueInfo(): { totalUsers: number; unmatchedUsers: number } {
