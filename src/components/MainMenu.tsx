@@ -93,6 +93,9 @@ export default function MainMenu() {
       } catch (error) {
         console.error('AI 채팅방 생성 중 오류:', error)
       }
+    } else if (id === 'lobby') {
+      // 대기실 페이지로 이동
+      router.push('/waiting')
     } else {
       // 다른 버튼들은 아직 기능이 없으므로 콘솔 로그만 출력
       console.log(`${id} 버튼이 클릭되었습니다.`)
