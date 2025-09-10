@@ -697,3 +697,37 @@ git show 분기점-v1.0
 - 다른 채팅방 타입 구현
 - WebSocket을 통한 실시간 업데이트 최적화
 
+### 2024-12-19 - 1:1 매치메이킹 시스템 오류 수정
+**개발 내용:**
+- ChatRoomStore import/export 불일치 문제 해결:
+  - `matchmakingQueue.ts`에서 `ChatRoomStore` 클래스 대신 `chatRoomStore` 인스턴스 사용
+  - `ChatRoomStore.getInstance()` 호출 대신 직접 인스턴스 import
+  - `saveRoom()` 메서드 대신 `setRoom()` 메서드 사용
+- API 엔드포인트 수정:
+  - `MatchmakingQueueManager` 클래스 대신 `matchmakingQueueManager` 인스턴스 사용
+  - 싱글톤 패턴의 서버리스 환경 호환성 문제 해결
+- Export 방식 통일:
+  - `matchmakingQueue.ts`에서 `export const matchmakingQueueManager` 방식으로 변경
+  - API 엔드포인트에서 일관된 import 방식 적용
+
+**해결된 문제:**
+- `TypeError: Cannot read properties of undefined (reading 'getInstance')` 오류
+- 1:1 매치메이킹 큐 참가 시 500 Internal Server Error
+- ChatRoomStore 모듈 로딩 실패 문제
+
+**기술적 개선:**
+- 모듈 import/export 방식 통일
+- 싱글톤 패턴의 서버리스 환경 호환성 개선
+- API 엔드포인트에서 일관된 인스턴스 사용
+- 에러 처리 및 로깅 개선
+
+**수정된 파일:**
+- `src/utils/matchmakingQueue.ts`: ChatRoomStore import 방식 변경
+- `src/app/api/matchmaking/1v1/join/route.ts`: matchmakingQueueManager 인스턴스 사용
+- `src/app/api/matchmaking/1v1/status/route.ts`: matchmakingQueueManager 인스턴스 사용
+
+**다음 단계:**
+- 1:1 매치메이킹 시스템 테스트
+- 2개의 서로 다른 브라우저에서 매칭 테스트
+- 다른 채팅방 타입 구현
+
