@@ -130,14 +130,16 @@ class MatchmakingQueueManager {
   }
 
   private createHumanVsHumanRoom(user1: QueueUser, user2: QueueUser): void {
-    const roomId = `room_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    
     // 기존 채팅방 생성 로직 사용
     const { ChatRoomManager } = require('./chatRoomManager')
-    const chatRoomManager = new ChatRoomManager(roomId)
+    const chatRoomManager = new ChatRoomManager(2, ['human', 'human'])
     
-    // 사람 vs 사람 채팅방 생성
-    chatRoomManager.initializeRoom(['human', 'human'])
+    const roomId = chatRoomManager.room.id
+    
+    // 채팅방 저장
+    const { ChatRoomStore } = require('./chatRoomStore')
+    const chatRoomStore = ChatRoomStore.getInstance()
+    chatRoomStore.saveRoom(chatRoomManager.room)
     
     // 사용자들에게 매칭 정보 설정
     user1.matched = true
@@ -152,14 +154,16 @@ class MatchmakingQueueManager {
   }
 
   private createHumanVsAIRoom(user: QueueUser): void {
-    const roomId = `room_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    
     // 기존 채팅방 생성 로직 사용
     const { ChatRoomManager } = require('./chatRoomManager')
-    const chatRoomManager = new ChatRoomManager(roomId)
+    const chatRoomManager = new ChatRoomManager(2, ['human', 'ai'])
     
-    // 사람 vs AI 채팅방 생성
-    chatRoomManager.initializeRoom(['human', 'ai'])
+    const roomId = chatRoomManager.room.id
+    
+    // 채팅방 저장
+    const { ChatRoomStore } = require('./chatRoomStore')
+    const chatRoomStore = ChatRoomStore.getInstance()
+    chatRoomStore.saveRoom(chatRoomManager.room)
     
     // 사용자에게 매칭 정보 설정
     user.matched = true
