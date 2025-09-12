@@ -185,10 +185,9 @@ class MatchmakingQueueManager {
   }
 
   private getUserPosition(user: QueueUser): number {
-    // 사용자의 전체 순서 계산 (매칭된 사용자 포함)
-    const totalMatched = Object.keys(this.queue.matchedUsers).length
+    // 현재 큐에서의 사용자 위치만 계산 (매칭된 사용자는 이미 큐에서 제거됨)
     const currentQueueIndex = this.queue.users.indexOf(user)
-    return totalMatched + currentQueueIndex + 1
+    return currentQueueIndex + 1
   }
 
   private isOddPosition(position: number): boolean {
@@ -245,8 +244,12 @@ class MatchmakingQueueManager {
     const usersToRemove = this.queue.users.filter(user => userIds.includes(user.id))
     const sessionIdsToRemove = usersToRemove.map(user => user.sessionId)
     
+    const beforeCount = this.queue.users.length
+    
     // 큐에서 사용자 제거
     this.queue.users = this.queue.users.filter(user => !userIds.includes(user.id))
+    
+    const afterCount = this.queue.users.length
     
     // 매칭된 사용자 정보는 유지 (클라이언트가 매칭 상태를 확인할 수 있도록)
     // sessionIdsToRemove.forEach(sessionId => {
@@ -254,7 +257,7 @@ class MatchmakingQueueManager {
     // })
     
     this.saveQueue()
-    console.log(`매칭된 사용자들 큐에서 제거: ${userIds.join(', ')}`)
+    console.log(`매칭된 사용자들 큐에서 제거: ${userIds.join(', ')} (${beforeCount} → ${afterCount})`)
   }
 
   public leaveQueue(sessionId: string): void {

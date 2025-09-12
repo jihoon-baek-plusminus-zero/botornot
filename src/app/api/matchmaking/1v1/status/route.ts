@@ -21,7 +21,8 @@ export async function GET(request: NextRequest) {
       position: status.position,
       matched: status.matched,
       roomId: status.roomId,
-      playerId: status.playerId
+      playerId: status.playerId,
+      matchType: status.matchType
     })
   } catch (error) {
     console.error('매칭 상태 확인 오류:', error)
