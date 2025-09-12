@@ -40,7 +40,12 @@ class MatchmakingQueueManager {
     try {
       if (fs.existsSync(this.dataPath)) {
         const data = fs.readFileSync(this.dataPath, 'utf8')
-        return JSON.parse(data)
+        const loadedQueue: MatchmakingQueue = JSON.parse(data)
+        // Ensure matchedUsers exists, even if loaded from an old file format
+        if (!loadedQueue.matchedUsers) {
+          loadedQueue.matchedUsers = {}
+        }
+        return loadedQueue
       }
     } catch (error) {
       console.error('매치메이킹 큐 로드 오류:', error)
@@ -69,6 +74,13 @@ class MatchmakingQueueManager {
   }
 
   public joinQueue(sessionId: string): { position: number; userId: string } {
+    // 먼저 매칭된 사용자 목록에서 확인 (이미 매칭된 경우)
+    if (this.queue.matchedUsers[sessionId]) {
+      const matchInfo = this.queue.matchedUsers[sessionId]
+      // 이미 매칭된 사용자는 큐에 다시 추가하지 않고 매칭 정보 반환
+      return { position: 0, userId: `matched_${sessionId}` } // userId는 임시로 설정
+    }
+
     // 이미 큐에 있는지 확인
     const existingUser = this.queue.users.find(user => user.sessionId === sessionId)
     if (existingUser && !existingUser.matched) {
@@ -102,7 +114,7 @@ class MatchmakingQueueManager {
     if (this.queue.matchedUsers[sessionId]) {
       const matchInfo = this.queue.matchedUsers[sessionId]
       return {
-        position: 0,
+        position: 0, // 매칭된 사용자는 큐에 없으므로 0으로 표시
         matched: true,
         roomId: matchInfo.roomId,
         playerId: matchInfo.playerId
@@ -112,6 +124,7 @@ class MatchmakingQueueManager {
     // 큐에서 사용자 찾기
     const user = this.queue.users.find(u => u.sessionId === sessionId)
     if (!user) {
+      // 사용자가 큐에도 없고, 매칭된 사용자 목록에도 없으면 매칭되지 않은 상태
       return { position: 0, matched: false }
     }
 
@@ -218,7 +231,7 @@ class MatchmakingQueueManager {
 
   public getQueueInfo(): { totalUsers: number; unmatchedUsers: number } {
     return {
-      totalUsers: this.queue.users.length,
+      totalUsers: this.queue.users.length + Object.keys(this.queue.matchedUsers).length, // Include matched users in total
       unmatchedUsers: this.queue.users.filter(user => !user.matched).length
     }
   }
