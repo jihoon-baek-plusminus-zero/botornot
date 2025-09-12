@@ -162,7 +162,7 @@ class MatchmakingQueueManager {
       // 매칭 후 남은 사용자가 있으면 다시 매칭 시도
       this.tryMatching()
     }
-    // 1명만 있으면 AI와 매칭
+    // 1명만 있으면 AI와 매칭 (홀수 번째 사용자)
     else if (unmatchedUsers.length === 1) {
       const user = unmatchedUsers[0]
 
