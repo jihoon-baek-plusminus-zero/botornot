@@ -227,8 +227,20 @@ class MatchmakingQueueManager {
   }
 
   private removeMatchedUsers(userIds: string[]): void {
+    // userIds는 실제로는 user.id 배열이므로, sessionId로 변환해서 제거
+    const usersToRemove = this.queue.users.filter(user => userIds.includes(user.id))
+    const sessionIdsToRemove = usersToRemove.map(user => user.sessionId)
+    
+    // 큐에서 사용자 제거
     this.queue.users = this.queue.users.filter(user => !userIds.includes(user.id))
+    
+    // 매칭된 사용자 정보는 유지 (클라이언트가 매칭 상태를 확인할 수 있도록)
+    // sessionIdsToRemove.forEach(sessionId => {
+    //   delete this.queue.matchedUsers[sessionId]
+    // })
+    
     this.saveQueue()
+    console.log(`매칭된 사용자들 큐에서 제거: ${userIds.join(', ')}`)
   }
 
   public leaveQueue(sessionId: string): void {
