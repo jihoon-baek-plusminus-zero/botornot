@@ -141,27 +141,43 @@ class MatchmakingQueueManager {
     
     console.log(`매칭 시도: ${unmatchedUsers.length}명의 매칭되지 않은 사용자`)
     
-    if (unmatchedUsers.length >= 3) {
-      // 1-2번 매칭 (사람 vs 사람)
+    // 2명이 모이면 즉시 사람-사람 매칭
+    if (unmatchedUsers.length >= 2) {
       const user1 = unmatchedUsers[0]
       const user2 = unmatchedUsers[1]
-      
-      // 3번은 AI와 매칭
-      const user3 = unmatchedUsers[2]
 
-      console.log(`매칭 시작: ${user1.id}, ${user2.id}, ${user3.id}`)
+      console.log(`사람-사람 매칭: ${user1.id}, ${user2.id}`)
 
       // 1:1 대화방 생성 (사람 vs 사람)
       this.createHumanVsHumanRoom(user1, user2)
-      
-      // 1:AI 대화방 생성 (사람 vs AI)
-      this.createHumanVsAIRoom(user3)
 
       // 매칭 상태 저장
       this.saveQueue()
 
       // 매칭된 사용자들을 큐에서 제거
-      this.removeMatchedUsers([user1.id, user2.id, user3.id])
+      this.removeMatchedUsers([user1.id, user2.id])
+      
+      console.log('사람-사람 매칭 완료')
+      
+      // 매칭 후 남은 사용자가 있으면 다시 매칭 시도
+      this.tryMatching()
+    }
+    // 1명만 있으면 AI와 매칭
+    else if (unmatchedUsers.length === 1) {
+      const user = unmatchedUsers[0]
+
+      console.log(`사람-AI 매칭: ${user.id}`)
+
+      // 1:AI 대화방 생성 (사람 vs AI)
+      this.createHumanVsAIRoom(user)
+
+      // 매칭 상태 저장
+      this.saveQueue()
+
+      // 매칭된 사용자를 큐에서 제거
+      this.removeMatchedUsers([user.id])
+      
+      console.log('사람-AI 매칭 완료')
     }
   }
 
