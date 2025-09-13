@@ -106,6 +106,7 @@ async function handleSendMessage(
 
     // 메시지 추가
     const newMessage = roomManager.addMessage(playerId, message)
+    console.log(`[${roomId}] 플레이어 ${playerId} 메시지: ${message}`)
     
     // 다음 차례로 이동
     roomManager.nextTurn()
@@ -149,6 +150,7 @@ async function handleProcessAITurn(
     if (aiResponse.success && aiResponse.message) {
       // AI 메시지 추가
       const aiMessage = roomManager.addMessage(currentPlayer.id, aiResponse.message)
+      console.log(`[${roomId}] AI ${currentPlayer.id} 응답: ${aiResponse.message}`)
       
       // 다음 차례로 이동
       roomManager.nextTurn()
@@ -167,6 +169,7 @@ async function handleProcessAITurn(
         currentPlayer.id, 
         '죄송합니다. 응답을 생성할 수 없습니다.'
       )
+      console.log(`[${roomId}] AI ${currentPlayer.id} 에러: 응답 생성 실패`)
       roomManager.nextTurn()
       
       // 에러 메시지 후 채팅방 상태 저장
