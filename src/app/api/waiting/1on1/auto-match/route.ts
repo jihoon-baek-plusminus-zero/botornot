@@ -30,12 +30,9 @@ export async function POST(request: NextRequest) {
     // 각 채팅방 생성
     for (const [roomId, users] of roomGroups) {
       try {
-        const playerTypes = users.map(user => user.tag === 'C' ? 'ai' : 'human')
-        if (playerTypes.length === 1 && playerTypes[0] === 'ai') {
-          // C태그 홀로 매칭 - AI와 대화
-          playerTypes.push('ai')
-        } else if (playerTypes.length === 1 && playerTypes[0] === 'human') {
-          // A/B태그 홀로 매칭 - AI와 대화
+        const playerTypes = users.map(user => 'human') // 모든 사용자는 human
+        if (playerTypes.length === 1) {
+          // 홀로 매칭 - AI와 대화
           playerTypes.push('ai')
         }
         

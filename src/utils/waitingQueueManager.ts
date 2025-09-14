@@ -16,6 +16,7 @@ export interface WaitingUser {
 export interface WaitingQueue {
   users: WaitingUser[]
   lastUpdated: Date
+  totalUserCount: number // 전체 입장한 사용자 수 (태그 할당용)
 }
 
 class WaitingQueueManager {
@@ -37,6 +38,12 @@ class WaitingQueueManager {
           user.joinedAt = new Date(user.joinedAt)
         })
         parsed.lastUpdated = new Date(parsed.lastUpdated)
+        
+        // 기존 데이터와의 호환성을 위해 totalUserCount 초기화
+        if (parsed.totalUserCount === undefined) {
+          parsed.totalUserCount = parsed.users.length
+        }
+        
         return parsed
       }
     } catch (error) {
@@ -45,7 +52,8 @@ class WaitingQueueManager {
 
     return {
       users: [],
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
+      totalUserCount: 0
     }
   }
 
@@ -81,8 +89,9 @@ class WaitingQueueManager {
     // 기존 사용자가 있으면 제거
     this.removeUser(sessionId)
 
-    // 입장 순서에 따라 태그 계산 (현재 대기열 길이 + 1)
-    const tag = this.generateTag(this.queue.users.length + 1)
+    // 전체 입장 순서에 따라 태그 계산 (totalUserCount + 1)
+    this.queue.totalUserCount++
+    const tag = this.generateTag(this.queue.totalUserCount)
 
     const newUser: WaitingUser = {
       id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
